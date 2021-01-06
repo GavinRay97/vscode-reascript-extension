@@ -64,7 +64,7 @@ function scrapeLuaBuiltinFunctions() {}
 async function main() {
   const request = await axios.get("https://www.reaper.fm/sdk/reascript/reascripthelp.html")
   const { document } = new JSDOM(request.data).window
-  const luaMethods = scrapeReaScriptAPI(document, "lua")
+  const luaMethods = scrapeReaScriptAPI(document as any, "lua")
   console.log(luaMethods)
 }
 
