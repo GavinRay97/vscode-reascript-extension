@@ -5,8 +5,44 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = void 0;
 const vscode = require("vscode");
-const definitions = require("./reascript-api.json");
-const reaperLuaMethodPrefixes = ["reaper.", "gfx."];
+const defs = require("./api-scraper/reaper-api-docs.json");
+const ultraschall_reascript_api_types_1 = require("./api-scraper/ultraschall-reascript-api-types");
+const definitions = defs;
+function addMethodParamsToMarkdownDocs(markdown, method) {
+    markdown.appendMarkdown("\n");
+    markdown.appendMarkdown("---");
+    markdown.appendMarkdown("\n");
+    for (const param of method.parametersParsed) {
+        markdown.appendMarkdown(`\n***${param.type}*** **${param.paramName}**: ${param.description}\n`);
+    }
+    return markdown;
+}
+function getDescriptionForAPIMethod(method) {
+    if (typeof method.description == "string") {
+        return method.description.trim();
+    }
+    if ("#text" in method.description) {
+        return method.description["#text"].trim();
+    }
+    if (Array.isArray(method.description)) {
+        const joined = method.description.join("\n").trim();
+    }
+    return "";
+}
+function getLuaDefinitionForAPIMethod(method) {
+    if (method.functioncall) {
+        if (!Array.isArray(method.functioncall)) {
+            if (method.functioncall["@_prog_lang"] == ultraschall_reascript_api_types_1.ProgLang.Lua)
+                return method.functioncall["#text"];
+        }
+        else {
+            const luaMethod = method.functioncall.find((it) => it["@_prog_lang"] == ultraschall_reascript_api_types_1.ProgLang.Lua);
+            if (luaMethod)
+                return luaMethod["#text"];
+        }
+    }
+    return "";
+}
 function findOverlap(a, b) {
     if (b.length === 0)
         return "";
@@ -17,30 +53,41 @@ function findOverlap(a, b) {
     return findOverlap(a, b.substring(0, b.length - 1));
 }
 function convertReaScriptDefinitionToSignatureInformation(definition) {
-    const signature = new vscode.SignatureInformation(definition.body, definition.description);
-    // Grabs the text in between the parenthesesis:
-    // reaper.AddProjectMarker(ReaProject proj, boolean isrgn, number pos, number rgnend, string name, integer wantidx)
-    const paramString = definition.body.substring(definition.body.indexOf("(") + 1, definition.body.indexOf(")") - 1);
-    // Split by the commas to return array of params
-    const params = paramString.split(",");
-    signature.parameters = params.map((it) => new vscode.ParameterInformation(it));
+    var _a, _b;
+    const methodCall = ((_a = definition.functioncallParsed.lua) === null || _a === void 0 ? void 0 : _a.methodName) +
+        "(" + ((_b = definition.functioncallParsed.lua) === null || _b === void 0 ? void 0 : _b.parameters.map((it) => `${it.type} ${it.identifier}`).join(", ")) +
+        ")";
+    const markdown = new vscode.MarkdownString();
+    markdown.appendMarkdown(getDescriptionForAPIMethod(definition));
+    addMethodParamsToMarkdownDocs(markdown, definition);
+    const signature = new vscode.SignatureInformation(getLuaDefinitionForAPIMethod(definition), markdown);
+    signature.parameters = definition.parametersParsed.map((it) => new vscode.ParameterInformation(it.paramName, it.description));
     return signature;
 }
 function activate(context) {
     const reascriptSignatureProvider = vscode.languages.registerSignatureHelpProvider("lua", {
         provideSignatureHelp(document, position, token, context) {
             // If not a "reaper." or "gfx." method, don't do anything
-            const linePrefix = document.lineAt(position).text.substr(0, position.character);
+            // const linePrefix = document.lineAt(position).text.substr(0, position.character)
+            const range = document.getWordRangeAtPosition(position);
+            const word = document.getText(range);
+            console.log("SIGNATURE HELP");
+            console.log({ word });
             // Try to find the current method name in the object list by matching the prefixes together
-            const currentReaperMethod = Object.entries(definitions).find(([key, method]) => {
-                return findOverlap(linePrefix, method.prefix) == method.prefix;
+            const currentReaperMethod = definitions.find((it) => {
+                var _a;
+                if (!((_a = it.functioncallParsed) === null || _a === void 0 ? void 0 : _a.lua))
+                    return false;
+                return it.functioncallParsed.lua.methodName == word.replace("(", "").replace(")", "");
             });
+            console.log({ currentReaperMethod });
+            // const currentReaperMethod = Object.entries(definitions).find(([key, method]) => {
+            //   return findOverlap(linePrefix, method.prefix) == method.prefix
+            // })
             if (!currentReaperMethod)
                 return undefined;
-            const [methodIdentifier, method] = currentReaperMethod;
             const signatureHelp = new vscode.SignatureHelp();
-            signatureHelp.signatures.push(convertReaScriptDefinitionToSignatureInformation(method));
-            console.log({ linePrefix, signatureHelp, context });
+            signatureHelp.signatures.push(convertReaScriptDefinitionToSignatureInformation(currentReaperMethod));
             return signatureHelp;
         },
     }, {
@@ -49,27 +96,30 @@ function activate(context) {
     });
     const reascriptCompletionProvider = vscode.languages.registerCompletionItemProvider("lua", {
         provideCompletionItems(document, position, token, context) {
-            // If not a "reaper." or  "gfx." method, don't do anything
-            const linePrefix = document.lineAt(position).text.substr(0, position.character);
-            // TODO: Using "linePrefix.trim()" here is the only way to make this work right and I have no idea why
-            // which is mildly unsettling. Should probably try to figure this out again at some point, but I'm moving on.
-            if (!reaperLuaMethodPrefixes.some((it) => linePrefix.trim().endsWith(it)))
-                return undefined;
-            // Try to find method names in the object list by matching the prefixes together
-            const matchingReaperMethods = Object.entries(definitions).filter(([key, method]) => {
-                // return linePrefix.trim().e
-                const overlap = findOverlap(linePrefix, method.prefix);
-                return overlap != "";
+            const range = document.getWordRangeAtPosition(position);
+            const word = document.getText(range);
+            const matchingReaperMethods = definitions.filter((it) => {
+                var _a, _b;
+                if (!it.functioncallParsed)
+                    return false;
+                const methodName = (_b = (_a = it.functioncallParsed) === null || _a === void 0 ? void 0 : _a.lua) === null || _b === void 0 ? void 0 : _b.methodName;
+                if (!methodName)
+                    return false;
+                return methodName.includes(word);
             });
             if (!matchingReaperMethods.length)
                 return undefined;
             // Map through the methods that match the current text, construct a CompletionItem from each
-            const completionItems = matchingReaperMethods.map(([_, entry]) => {
-                // Split "reaper.AddMediaItemToTrack" into "reaper" and "AddMediaItemToTrack"
-                const [__, methodName] = entry.prefix.split(".");
+            const completionItems = matchingReaperMethods.map((entry) => {
+                var _a;
+                const methodName = (_a = entry.functioncallParsed.lua) === null || _a === void 0 ? void 0 : _a.methodName;
+                const suggestion = word.includes(".") ? methodName.split(".")[1] : methodName;
                 // Create the completion item from method name, add it's description as documentation
-                const item = new vscode.CompletionItem(methodName, vscode.CompletionItemKind.Method);
-                item.documentation = new vscode.MarkdownString(entry.description);
+                const item = new vscode.CompletionItem(suggestion, vscode.CompletionItemKind.Method);
+                const markdown = new vscode.MarkdownString();
+                markdown.appendMarkdown(getDescriptionForAPIMethod(entry));
+                addMethodParamsToMarkdownDocs(markdown, entry);
+                item.documentation = markdown;
                 return item;
             });
             return completionItems;
@@ -79,17 +129,17 @@ function activate(context) {
         provideHover(document, position, token) {
             const range = document.getWordRangeAtPosition(position);
             const word = document.getText(range);
-            const method = Object.entries(definitions).find(([key, method]) => {
-                // Split "reaper.AddMediaItemToTrack" into "reaper" and "AddMediaItemToTrack"
-                const [__, methodName] = method.prefix.split(".");
-                console.log({ methodName, word });
-                return word == methodName;
+            const method = definitions.find((it) => {
+                var _a;
+                if (!((_a = it.functioncallParsed) === null || _a === void 0 ? void 0 : _a.lua))
+                    return false;
+                return word == it.slug || word == it.title;
             });
             if (!method)
                 return undefined;
-            const [_, entry] = method;
             const markdown = new vscode.MarkdownString();
-            markdown.appendText(entry.description);
+            markdown.appendText(getDescriptionForAPIMethod(method));
+            addMethodParamsToMarkdownDocs(markdown, method);
             return new vscode.Hover(markdown);
         },
     });

@@ -1,15 +1,16 @@
 {
 	"compilerOptions": {
 		"module": "commonjs",
-		"target": "es2019",
-		"lib": ["ES2019"],
+		"target": "es2015",
+		"lib": ["es2020", "DOM", "DOM.Iterable"],
 		"outDir": "out",
 		"sourceMap": true,
 		"strict": true,
 		"rootDir": "src",
 		"resolveJsonModule": true,
 		// Skip lib check is enabled because something funky about JSDOM types, breaks debugging and compiling the extension/project
-		"skipLibCheck": true
+		"skipLibCheck": true,
+    "downlevelIteration": true
 	},
 	"exclude": [
 		"node_modules",
