@@ -3,4 +3,20 @@
 An extension for Reaper's ReaScript API methods in VS Code.
 Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
 
+## Changelog
+
+- 0.0.1
+  - Initial version
+  
+- 0.0.2 (1/6/2021)
+  - Added scraper and parser to grab docs from Ultraschall ReaScript API, and process the important stringified fields into JSON
+  - As a byproduct of using Ultraschall as a docs source, the extension now has:
+    - SWS methods
+    - JS methods
+    - Better descriptions
+    - Comments about parameter and returns values on many functions
+  - Updated formatting on the doc blocks, so that it looks much nicer. Important things are bolded, items are logically spaced, markdown used instead of plain text, etc
+  - Intellisense/Autocomplete now works without having to prefix the method with "reaper." and "gfx." (still need to make this a toggleable option)
+
+
 ![Demo](vscode-reascript-extension-demo.gif)
