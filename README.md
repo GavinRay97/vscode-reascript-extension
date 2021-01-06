@@ -17,6 +17,6 @@ Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
     - Comments about parameter and returns values on many functions
   - Updated formatting on the doc blocks, so that it looks much nicer. Important things are bolded, items are logically spaced, markdown used instead of plain text, etc
   - Intellisense/Autocomplete now works without having to prefix the method with "reaper." and "gfx." (still need to make this a toggleable option)
-
+  - **NOTE**: A big thank-you to Meo-Mespotine for writing/maintaining the Ultraschall docs, and also Extremeraym for his Node function that sanitizes the XML format so that it's properly parseable.
 
 ![Demo](vscode-reascript-extension-demo.gif)
