@@ -19,4 +19,7 @@ Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
   - Intellisense/Autocomplete now works without having to prefix the method with "reaper." and "gfx." (still need to make this a toggleable option)
   - **NOTE**: A big thank-you to Meo-Mespotine for writing/maintaining the Ultraschall docs, and also Extremeraym for his Node function that sanitizes the XML format so that it's properly parseable.
 
+- 0.0.3 (1/10/21)
+  - Fixed issue where autocomplete was case-sensitive if trying to autocomplete a method preceeding a dot, IE "getmedia" expected to trigger "reaper.GetMedia** but didn't
+
 ![Demo](vscode-reascript-extension-demo.gif)
