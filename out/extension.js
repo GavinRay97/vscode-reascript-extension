@@ -25,7 +25,7 @@ function getDescriptionForAPIMethod(method) {
         return method.description["#text"].trim();
     }
     if (Array.isArray(method.description)) {
-        const joined = method.description.join("\n").trim();
+        return method.description.join("\n").trim();
     }
     return "";
 }
@@ -43,20 +43,7 @@ function getLuaDefinitionForAPIMethod(method) {
     }
     return "";
 }
-function findOverlap(a, b) {
-    if (b.length === 0)
-        return "";
-    if (a.endsWith(b))
-        return b;
-    if (a.indexOf(b) >= 0)
-        return b;
-    return findOverlap(a, b.substring(0, b.length - 1));
-}
 function convertReaScriptDefinitionToSignatureInformation(definition) {
-    var _a, _b;
-    const methodCall = ((_a = definition.functioncallParsed.lua) === null || _a === void 0 ? void 0 : _a.methodName) +
-        "(" + ((_b = definition.functioncallParsed.lua) === null || _b === void 0 ? void 0 : _b.parameters.map((it) => `${it.type} ${it.identifier}`).join(", ")) +
-        ")";
     const markdown = new vscode.MarkdownString();
     markdown.appendMarkdown(getDescriptionForAPIMethod(definition));
     addMethodParamsToMarkdownDocs(markdown, definition);
@@ -65,25 +52,21 @@ function convertReaScriptDefinitionToSignatureInformation(definition) {
     return signature;
 }
 function activate(context) {
+    // SignatureHelpProvider shows the list of functions when providing autocomplete during typing/suggestion-trigger
     const reascriptSignatureProvider = vscode.languages.registerSignatureHelpProvider("lua", {
         provideSignatureHelp(document, position, token, context) {
             // If not a "reaper." or "gfx." method, don't do anything
             // const linePrefix = document.lineAt(position).text.substr(0, position.character)
             const range = document.getWordRangeAtPosition(position);
             const word = document.getText(range);
-            console.log("SIGNATURE HELP");
-            console.log({ word });
             // Try to find the current method name in the object list by matching the prefixes together
             const currentReaperMethod = definitions.find((it) => {
                 var _a;
                 if (!((_a = it.functioncallParsed) === null || _a === void 0 ? void 0 : _a.lua))
                     return false;
-                return it.functioncallParsed.lua.methodName == word.replace("(", "").replace(")", "");
+                return (it.functioncallParsed.lua.methodName.toLowerCase() ==
+                    word.replace("(", "").replace(")", "").toLowerCase());
             });
-            console.log({ currentReaperMethod });
-            // const currentReaperMethod = Object.entries(definitions).find(([key, method]) => {
-            //   return findOverlap(linePrefix, method.prefix) == method.prefix
-            // })
             if (!currentReaperMethod)
                 return undefined;
             const signatureHelp = new vscode.SignatureHelp();
@@ -105,7 +88,7 @@ function activate(context) {
                 const methodName = (_b = (_a = it.functioncallParsed) === null || _a === void 0 ? void 0 : _a.lua) === null || _b === void 0 ? void 0 : _b.methodName;
                 if (!methodName)
                     return false;
-                return methodName.includes(word);
+                return methodName.toLowerCase().includes(word.toLowerCase());
             });
             if (!matchingReaperMethods.length)
                 return undefined;
@@ -114,6 +97,7 @@ function activate(context) {
                 var _a;
                 const methodName = (_a = entry.functioncallParsed.lua) === null || _a === void 0 ? void 0 : _a.methodName;
                 const suggestion = word.includes(".") ? methodName.split(".")[1] : methodName;
+                console.log({ methodName, suggestion });
                 // Create the completion item from method name, add it's description as documentation
                 const item = new vscode.CompletionItem(suggestion, vscode.CompletionItemKind.Method);
                 const markdown = new vscode.MarkdownString();

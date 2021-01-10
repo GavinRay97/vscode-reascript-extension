@@ -33,7 +33,7 @@ function getDescriptionForAPIMethod(method: ProcessedUltraschallReaScriptAPIDoc)
     return method.description["#text"].trim()
   }
   if (Array.isArray(method.description)) {
-    const joined = method.description.join("\n").trim()
+    return method.description.join("\n").trim()
   }
   return ""
 }
@@ -50,24 +50,9 @@ function getLuaDefinitionForAPIMethod(method: ProcessedUltraschallReaScriptAPIDo
   return ""
 }
 
-function findOverlap(a: string, b: string): string {
-  if (b.length === 0) return ""
-  if (a.endsWith(b)) return b
-  if (a.indexOf(b) >= 0) return b
-  return findOverlap(a, b.substring(0, b.length - 1))
-}
-
 function convertReaScriptDefinitionToSignatureInformation(
   definition: ProcessedUltraschallReaScriptAPIDoc
 ): vscode.SignatureInformation {
-  const methodCall =
-    definition.functioncallParsed.lua?.methodName +
-    "(" +
-    definition.functioncallParsed.lua?.parameters
-      .map((it) => `${it.type} ${it.identifier}`)
-      .join(", ") +
-    ")"
-
   const markdown = new vscode.MarkdownString()
   markdown.appendMarkdown(getDescriptionForAPIMethod(definition))
   addMethodParamsToMarkdownDocs(markdown, definition)
@@ -79,10 +64,12 @@ function convertReaScriptDefinitionToSignatureInformation(
   signature.parameters = definition.parametersParsed.map(
     (it) => new vscode.ParameterInformation(it.paramName, it.description)
   )
+
   return signature
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  // SignatureHelpProvider shows the list of functions when providing autocomplete during typing/suggestion-trigger
   const reascriptSignatureProvider = vscode.languages.registerSignatureHelpProvider(
     "lua",
     {
@@ -97,20 +84,14 @@ export function activate(context: vscode.ExtensionContext) {
         const range = document.getWordRangeAtPosition(position)
         const word = document.getText(range)
 
-        console.log("SIGNATURE HELP")
-        console.log({ word })
-
         // Try to find the current method name in the object list by matching the prefixes together
         const currentReaperMethod = definitions.find((it) => {
           if (!it.functioncallParsed?.lua) return false
-          return it.functioncallParsed.lua!.methodName == word.replace("(", "").replace(")", "")
+          return (
+            it.functioncallParsed.lua!.methodName.toLowerCase() ==
+            word.replace("(", "").replace(")", "").toLowerCase()
+          )
         })
-
-        console.log({ currentReaperMethod })
-
-        // const currentReaperMethod = Object.entries(definitions).find(([key, method]) => {
-        //   return findOverlap(linePrefix, method.prefix) == method.prefix
-        // })
         if (!currentReaperMethod) return undefined
 
         const signatureHelp = new vscode.SignatureHelp()
@@ -143,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (!it.functioncallParsed) return false
           const methodName = it.functioncallParsed?.lua?.methodName
           if (!methodName) return false
-          return methodName.includes(word)
+          return methodName.toLowerCase().includes(word.toLowerCase())
         })
         if (!matchingReaperMethods.length) return undefined
 
@@ -151,12 +132,16 @@ export function activate(context: vscode.ExtensionContext) {
         const completionItems = matchingReaperMethods.map((entry) => {
           const methodName = entry.functioncallParsed.lua?.methodName!
           const suggestion = word.includes(".") ? methodName.split(".")[1] : methodName
+
+          console.log({ methodName, suggestion })
+
           // Create the completion item from method name, add it's description as documentation
           const item = new vscode.CompletionItem(suggestion, vscode.CompletionItemKind.Method)
           const markdown = new vscode.MarkdownString()
           markdown.appendMarkdown(getDescriptionForAPIMethod(entry))
           addMethodParamsToMarkdownDocs(markdown, entry)
           item.documentation = markdown
+
           return item
         })
 
