@@ -24,9 +24,18 @@ Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
   - Fixed issue where autocomplete was case-sensitive if trying to autocomplete a method preceeding a dot, IE "getmedia" expected to trigger "reaper.GetMedia\*\* but didn't
 
 - 0.0.4 (1/18/21)
+
   - **Added syntax highlighting for Eel/Jesusonic/WALTER (all credit to Breeder's TextMate grammar file, see copyright notice in repo)**
   - **Added intellisense/autocomplete for Eel/Jesusonic**
   - Method signatures now show the return types. IE, when pressing `(` to invoke `reaper.AddMediaItemToTrack`, it shows `MediaItem tr = reaper.AddMediaItemToTrack()`
   - Large internal refactor for the shape of the JSON document used to store ReaScript functions. Better parser in Lua using Ultraschall API methods for USDocML to generate this.
+
+- 0.0.5 (1/18/21)
+  - Fixed bug with signature completion
+  - Refactored providers to classes by feature, in individual folders, implementing the provider API for that feature:
+    - ```ts
+      // In "src/providers/eel/completion.ts"
+      class EelCompletionItemProvider implements vscode.CompletionItemProvider {}
+      ```
 
 ![Demo](vscode-reascript-extension-demo.gif)
