@@ -1,18 +1,18 @@
 export interface ReaScriptUSDocML {
-  source_document: SourceDocument
-  target_document: TargetDocument
-  requires: Requires
-  chapers: Chaper[]
-  tags: string[]
-  description: Description
-  params: Params
-  title: string
-  functioncall: Functioncall
-  return_values: Params
   signatures: any[] | SignaturesClass
+  requires: Requires
+  tags: string[]
+  target_document: TargetDocument
+  source_document: SourceDocument
+  description: Description
+  chapters: Chapter[]
+  return_values: Params
+  params: Params
+  functioncall: Functioncall
+  title: string
 }
 
-export enum Chaper {
+export enum Chapter {
   APIHelperFunctions = "Api-Helper-Functions",
   AdditionalCFunctions = "Additional C++ Functions",
   AdditionalEELFunctions = "Additional EEL-Functions",
@@ -62,21 +62,21 @@ export enum ProgLang {
 
 export interface Functioncall {
   lua?: string
-  cpp?: string
   python?: string
   eel?: string
+  cpp?: string
 }
 
 export interface Params {
+  param_count?: number
   prog_lang?: ProgLang
   entries: Entry[]
-  param_count?: number
   markup_type?: MarkupType
 }
 
 export interface Entry {
-  identifier: string
   description: string
+  identifier: string
 }
 
 export interface Requires {
@@ -88,53 +88,31 @@ export interface Requires {
 }
 
 export interface SignaturesClass {
-  lua: LuaSignature
+  eel?: Eel
+  lua?: Lua
 }
 
-export interface LuaSignature {
-  parameters: Parameter[]
+export interface Eel {
+  parameters: EelParameter[]
+  return_values: string[]
   method_name?: string
-  return_values: Parameter[]
 }
 
-export interface Parameter {
+export interface EelParameter {
+  type_name?: string
+  identifier: string
+  modifier?: string
+}
+
+export interface Lua {
+  parameters: ReturnValueElement[]
+  return_values: ReturnValueElement[]
+  method_name?: string
+}
+
+export interface ReturnValueElement {
+  type: string
   identifier?: string
-  type: Type
-}
-
-export enum Type {
-  Array = "array",
-  AudioAccessor = "AudioAccessor",
-  AudioWriter = "AudioWriter",
-  AudioXrun = "audio_xrun",
-  BREnvelope = "BR_Envelope",
-  Boolean = "boolean",
-  Function = "function",
-  FxChain = "FxChain",
-  Gfx = "gfx",
-  Hwnd = "HWND",
-  IReaperControlSurface = "IReaperControlSurface",
-  Identifier = "identifier",
-  Int = "int",
-  Integer = "integer",
-  JoystickDevice = "joystick_device",
-  KbdSectionInfo = "KbdSectionInfo",
-  MediaItem = "MediaItem",
-  MediaItemTake = "MediaItem_Take",
-  MediaTrack = "MediaTrack",
-  Number = "number",
-  Optional = "optional",
-  PCMSource = "PCM_source",
-  PackageEntry = "PackageEntry",
-  ReaProject = "ReaProject",
-  ReaperArray = "ReaperArray",
-  RprMIDINote = "RprMidiNote",
-  RprMIDITake = "RprMidiTake",
-  String = "string",
-  Table = "table",
-  TrackEnvelope = "TrackEnvelope",
-  Unsupported = "unsupported",
-  WDLFastString = "WDL_FastString",
 }
 
 export enum SourceDocument {

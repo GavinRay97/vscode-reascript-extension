@@ -1,7 +1,7 @@
 {
   "name": "reascript",
   "displayName": "REAPER ReaScript Extension (Intellisense)",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "GavinRay",
   "repository": {
     "type": "git",
@@ -19,6 +19,42 @@
   "activationEvents": [
     "*"
   ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "EEL",
+        "extensions": [
+          ".eel"
+        ]
+      },
+      {
+        "id": "Jesusonic"
+      },
+      {
+        "id": "WALTER",
+        "filenames": [
+          "rtconfig.txt"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "EEL",
+        "scopeName": "source.EEL",
+        "path": "./resources/ReaSyntax - EEL.tmLanguage"
+      },
+      {
+        "language": "Jesusonic",
+        "scopeName": "source.jesusonic",
+        "path": "./resources/ReaSyntax - JS.tmLanguage"
+      },
+      {
+        "language": "WALTER",
+        "scopeName": "source.WALTER",
+        "path": "./resources/ReaSyntax - WALTER.tmLanguage"
+      }
+    ]
+  },
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "yarn compile",
@@ -26,7 +62,6 @@
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.23",
     "@types/jsdom": "^16.2.5",
     "@types/node": "^14.14.19",
     "@types/vscode": "^1.32.0",
@@ -36,9 +71,6 @@
   "dependencies": {
     "@types/lodash": "^4.14.167",
     "axios": "^0.21.1",
-    "cheerio": "^1.0.0-rc.5",
-    "fast-xml-parser": "^3.17.6",
-    "jsdom": "^16.4.0",
-    "lodash": "^4.17.20"
+    "jsdom": "^16.4.0"
   }
 }
