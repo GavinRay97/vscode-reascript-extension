@@ -3,6 +3,14 @@
 An extension for Reaper's ReaScript API methods in VS Code.
 Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
 
+## To Do (Updated 4/6/21)
+
+- UltraSchall API
+- Python support
+- Investigate reworking type parser/generator to use:
+  - https://github.com/slsenseless/ReaScriptDocParser
+- Add option to auto-fill variable placeholder names when completing method signatures (like the user snippets functionality)
+
 ## Changelog
 
 - 0.0.1
