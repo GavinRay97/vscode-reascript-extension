@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import { ReaScriptUSDocML, SignaturesClass } from "./api-scraper/reascript-USDocML.types"
+import { ReaScriptUSDocML, SignaturesClass } from "./api-scraper/typescript/reascript-USDocML.types"
 
 export function addMethodParamsToMarkdownDocs(
   markdown: vscode.MarkdownString,

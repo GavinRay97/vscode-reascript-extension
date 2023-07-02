@@ -57,6 +57,7 @@
   },
   "main": "./out/extension.js",
   "scripts": {
+    "read-xml-doc": "npx ts-node src/api-scraper/typescript/parse_xml.ts",
     "scrape-ultraschall": "npx ts-node src/api-scraper/fix-and-escape-ultraschall-xml.ts",
     "scrape-api": "npx ts-node ./src/api-scraper/OLD_scrape-reascript-api.ts",
     "vscode:prepublish": "yarn compile",

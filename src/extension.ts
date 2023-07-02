@@ -3,7 +3,7 @@ import * as defs from "./api-scraper/lua/results.json"
 // const defs = [] as any
 const definitions = defs as ReaScriptUSDocML[]
 
-import { ReaScriptUSDocML } from "./api-scraper/reascript-USDocML.types"
+import { ReaScriptUSDocML } from "./api-scraper/typescript/reascript-USDocML.types"
 import { EelCompletionItemProvider } from "./providers/eel/completion"
 import { EelHoverProvider } from "./providers/eel/hover"
 import { EelSignatureHelpProvider } from "./providers/eel/signature"
