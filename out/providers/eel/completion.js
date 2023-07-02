@@ -29,7 +29,7 @@ class EelCompletionItemProvider {
             const item = new vscode.CompletionItem((_a = entry.signatures.eel) === null || _a === void 0 ? void 0 : _a.method_name, vscode.CompletionItemKind.Method);
             const markdown = new vscode.MarkdownString();
             markdown.appendMarkdown(entry.description.description);
-            utils_1.addMethodParamsToMarkdownDocs(markdown, entry);
+            (0, utils_1.addMethodParamsToMarkdownDocs)(markdown, entry);
             item.documentation = markdown;
             return item;
         });

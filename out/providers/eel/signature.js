@@ -23,7 +23,7 @@ class EelSignatureHelpProvider {
         if (!currentReaperMethod)
             return undefined;
         const signatureHelp = new vscode.SignatureHelp();
-        signatureHelp.signatures.push(utils_1.convertReaScriptDefinitionToSignatureInformation(currentReaperMethod, "eel"));
+        signatureHelp.signatures.push((0, utils_1.convertReaScriptDefinitionToSignatureInformation)(currentReaperMethod, "eel"));
         return signatureHelp;
     }
     register() {

@@ -21,7 +21,7 @@ class LuaHoverProvider {
             return undefined;
         const markdown = new vscode.MarkdownString();
         markdown.appendText(method.description.description.trim());
-        utils_1.addMethodParamsToMarkdownDocs(markdown, method);
+        (0, utils_1.addMethodParamsToMarkdownDocs)(markdown, method);
         return new vscode.Hover(markdown);
     }
     register() {

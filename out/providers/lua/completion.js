@@ -31,7 +31,7 @@ class LuaCompletionItemProvider {
             const item = new vscode.CompletionItem(suggestion, vscode.CompletionItemKind.Method);
             const markdown = new vscode.MarkdownString();
             markdown.appendMarkdown(entry.description.description.trim());
-            utils_1.addMethodParamsToMarkdownDocs(markdown, entry);
+            (0, utils_1.addMethodParamsToMarkdownDocs)(markdown, entry);
             item.documentation = markdown;
             return item;
         });
