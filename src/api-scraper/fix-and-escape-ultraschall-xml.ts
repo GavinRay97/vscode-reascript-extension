@@ -1,7 +1,6 @@
 import * as fs from "fs/promises"
 import path = require("path")
-import axios from "axios"
-
+import axios, { AxiosResponse } from "axios"
 /**
  * ========================================================
  * This script fixes and escapes the XML provdided
@@ -32,7 +31,7 @@ function fixUltraschallXML(text: string): string {
 }
 
 async function fetchLatestUltraschallReaScriptAPIDocs() {
-  const request = await axios.get(
+  const request = await axios.get<null, AxiosResponse<string>>(
     "https://raw.githubusercontent.com/Ultraschall/ultraschall-lua-api-for-reaper/master/ultraschall_api/DocsSourcefiles/reaper-apidocs.USDocML"
   )
   return request.data
@@ -42,7 +41,7 @@ async function main() {
   const xml = await fetchLatestUltraschallReaScriptAPIDocs()
   const parsedXML = fixUltraschallXML(xml)
   const outpath = path.join(__dirname, "reaper-api-docs-fixed.xml")
-  await fs.writeFile(outpath, parsedXML)
+  //await fs.writeFile(outpath, parsedXML)
 }
 
 main().catch((err) => {
