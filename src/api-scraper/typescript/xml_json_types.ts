@@ -3,15 +3,16 @@ export type XML2JsonParseItem = {
     version: string
     spok_lang: string
     /**
-     * will be marked as "*" or "eel" or "lua" or "python" or "cpp"
+     *
      */
-    prog_lang: string
+    prog_lang: string //will be marked as "*" or "eel" or "lua" or "python" or "cpp"
   }
   changelog: string[]
   /**line-separated strings */
   chapter_context: ChapterContexts[]
+  deprecated?: boolean // TODO check
   description: string[]
-  functioncall: {
+  functioncall?: {
     /** contents of function
      * follows this pattern somewhat:
      * return_type function_name(parameters)
@@ -20,11 +21,14 @@ export type XML2JsonParseItem = {
     /** programming language used*/
     $: { prog_lang: string }
   }[]
+  linked_to?: string[] // TODO check
+  parameters?: string[] // TODO check
   /**line-separated strings */
-  requires: string[]
+  requires?: string[]
   /**line-separated strings */
-  ret_vals: string[]
-  slugs: string[]
+  ret_vals?: string[] // TODO check
+  ret_val?: string[] // TODO check
+  slug: string[]
   /** indicates file names */
   source_document: string[]
   /**
@@ -34,6 +38,7 @@ export type XML2JsonParseItem = {
   tags: string[]
   target_document: string[]
   title: string[]
+  _: any // TODO Check
 }
 export type XML2JSONParseDoc = XML2JsonParseItem[]
 export type UltraschallApiXML = {

@@ -1,8 +1,8 @@
 // read contents of ../reaper-api-docs-fixed.xml
 // call parseXML on contents
 
-import { UltraschallApiXML } from "./xml_json_types"
-import { findCommonKeys, listChapterContextsAndKeys } from "./helpers/findUltraschallKeyTypes"
+import { UltraschallApiXML } from "../xml_json_types"
+import { findCommonKeys, listChapterContextsAndKeys } from "../helpers/findUltraschallKeyTypes"
 
 function read_file() {
   const fs = require("fs")
