@@ -28,6 +28,12 @@ main().catch((err) => {
 		"---@type function({params}):retval"
  */
 /* function mything(tracks) end ---@type function (tracks: table<number, MediaTrack>): table<number, ItemPosition> */
+/**
+ *
+ * remove lua's reserved words
+ * end in function
+ * @returns
+ */
 export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
   const metaTag = "---@meta\nreaper = {}\n"
   const formattedDefinitions = definitions
@@ -38,7 +44,9 @@ export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
         hasLuaProp(def.signatures)
       ) {
         let { return_values, parameters } = def.signatures.lua
-        const params_decl = parameters.map((element) => element.identifier).join(", ")
+        const params_decl = parameters
+          .map((element) => rewriteLuaReservedWords(element.identifier || ""))
+          .join(", ")
         const params_type = parameters.map((element) => formatParam(element)).join("")
         const ret_type = return_values.map((element) => formatReturn(element)).join(", ")
 
@@ -57,18 +65,25 @@ export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
       } else return ""
     })
     .filter((str) => str !== "")
-  return metaTag + formattedDefinitions.join("\n")
+  return metaTag + writeReaperTypes() + formattedDefinitions.join("\n")
 }
+function rewriteLuaReservedWords(str: string) {
+  if (str === "end") return "end_"
+  if (str === "function") return "function_"
+  if (str === "in") return "in_"
+  else return str
+}
+
 function formatReturn(element: ReturnValueElement): string {
   const { type, identifier } = element
-  return `${type} ${identifier || ""}`
+  return `${type} ${rewriteLuaReservedWords(identifier || "")}`
 }
 
 function formatParam(element: ReturnValueElement): string {
   // lua output per param must be
   // "---@param paramname paramtype"
   const { type, identifier } = element
-  return `---@param ${identifier || ""} ${type}\n`
+  return `---@param ${rewriteLuaReservedWords(identifier || "")} ${type}\n`
 }
 
 // check that the signature is a SignaturesClass
@@ -98,4 +113,35 @@ function formatLuaFunctioncall(functioncall: Functioncall["lua"]) {
     .reverse()
     .join("")
   return str
+}
+
+function writeReaperTypes() {
+  const reaperTypes = [
+    "MediaTrack",
+    "MediaItem",
+    "ReaProject",
+    "MediaItem_Take",
+    "AudioAccessor",
+    "TrackEnvelope",
+    "IReaperControlSurface",
+    "HWND",
+    "PCM_source",
+    "joystick_device",
+    "KbdSectionInfo",
+    "BR_Envelope",
+    "RprMidiTake",
+    "RprMidiNote",
+    "WDL_FastString",
+    "audio_xrun",
+    "unsupported",
+    "AudioWriter",
+    "FxChain",
+    "gfx",
+    "PackageEntry",
+  ]
+  return reaperTypes
+    .map((type) => {
+      return `---@alias ${type} unknown\n`
+    })
+    .join("")
 }

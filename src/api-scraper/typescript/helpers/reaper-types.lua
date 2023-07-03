@@ -1,5 +1,26 @@
 ---@meta
 reaper = {}
+---@alias MediaTrack unknown
+---@alias MediaItem unknown
+---@alias ReaProject unknown
+---@alias MediaItem_Take unknown
+---@alias AudioAccessor unknown
+---@alias TrackEnvelope unknown
+---@alias IReaperControlSurface unknown
+---@alias HWND unknown
+---@alias PCM_source unknown
+---@alias joystick_device unknown
+---@alias KbdSectionInfo unknown
+---@alias BR_Envelope unknown
+---@alias RprMidiTake unknown
+---@alias RprMidiNote unknown
+---@alias WDL_FastString unknown
+---@alias audio_xrun unknown
+---@alias unsupported unknown
+---@alias AudioWriter unknown
+---@alias FxChain unknown
+---@alias gfx unknown
+---@alias PackageEntry unknown
 ---Creates a new media item. It will be empty and therefore not be shown in the arrange-view, until you associate a mediafile(audio, picture, video, etc) or a length and position to it using [SetMediaItemInfo\_Value](#SetMediaItemInfo_Value)
 ---@param tr MediaTrack
 ---@return MediaItem item
@@ -1522,19 +1543,19 @@ function reaper.GetSet_ArrangeView2(proj, isSet, screen_x_start, screen_x_end, s
 ---@param isSet boolean
 ---@param isLoop boolean
 ---@param start number
----@param end number
+---@param end_ number
 ---@param allowautoseek boolean
----@return number start, number end
-function reaper.GetSet_LoopTimeRange(isSet, isLoop, start, end, allowautoseek) end
+---@return number start, number end_
+function reaper.GetSet_LoopTimeRange(isSet, isLoop, start, end_, allowautoseek) end
 
 ---@param proj ReaProject
 ---@param isSet boolean
 ---@param isLoop boolean
 ---@param start number
----@param end number
+---@param end_ number
 ---@param allowautoseek boolean
----@return number start, number end
-function reaper.GetSet_LoopTimeRange2(proj, isSet, isLoop, start, end, allowautoseek) end
+---@return number start, number end_
+function reaper.GetSet_LoopTimeRange2(proj, isSet, isLoop, start, end_, allowautoseek) end
 
 ---Get or set automation item information. autoitem_idx=0 for the first automation item on an envelope, 1 for the second item, etc. desc can be any of the following:
 ---D_POOL_ID : double * : automation item pool ID (as an integer); edits are propagated to all other automation items that share a pool ID
@@ -2146,10 +2167,10 @@ function reaper.HasTrackMIDIProgramsEx(proj, track) end
 ---@param is_temporary_help boolean
 function reaper.Help_Set(helpstring, is_temporary_help) end
 
----@param in string
+---@param in_ string
 ---@param out string
 ---@return string out
-function reaper.image_resolve_fn(in, out) end
+function reaper.image_resolve_fn(in_, out) end
 
 ---Insert a new automation item. pool\_id &lt; 0 collects existing envelope points into the automation item; if pool\_id is &gt;= 0 the automation item will be a new instance of that pool (which will be created as an empty instance if it does not exist). Returns the index of the item, suitable for passing to other automation item API functions. See [GetSetAutomationItemInfo](#GetSetAutomationItemInfo).
 ---@param env TrackEnvelope
@@ -2998,10 +3019,10 @@ function reaper.RefreshToolbar(command_id) end
 function reaper.RefreshToolbar2(section_id, command_id) end
 
 ---Makes a filename "in" relative to the current project, if any.
----@param in string
+---@param in_ string
 ---@param out string
 ---@return string out
-function reaper.relative_fn(in, out) end
+function reaper.relative_fn(in_, out) end
 
 ---Remove a send/receive/hardware output. See [CreateTrackSend](#CreateTrackSend), [GetSetTrackSendInfo](#GetSetTrackSendInfo), [GetTrackSendInfo\_Value](#GetTrackSendInfo_Value), [SetTrackSendInfo\_Value](#SetTrackSendInfo_Value), [GetTrackNumSends](#GetTrackNumSends).For ReaRoute-users: the outputs are hardware outputs, but with 512 added to the destination channel index (512 is the first rearoute channel, 513 the second, etc).
 ---@param tr MediaTrack
@@ -3033,17 +3054,17 @@ function reaper.ReorderSelectedTracks(beforeTrackIdx, makePrevFolder) end
 function reaper.Resample_EnumModes(mode) end
 
 ---See [resolve\_fn2](#resolve_fn2).
----@param in string
+---@param in_ string
 ---@param out string
 ---@return string out
-function reaper.resolve_fn(in, out) end
+function reaper.resolve_fn(in_, out) end
 
 ---Resolves a filename "in" by using project settings etc. If no file found, out will be a copy of in.
----@param in string
+---@param in_ string
 ---@param out string
 ---@param string optional
 ---@return string out
-function reaper.resolve_fn2(in, out, string) end
+function reaper.resolve_fn2(in_, out, string) end
 
 ---Get the named command for the given command ID. The returned string will not start with '_' (e.g. it will return "SWS_ABOUT"), it will be NULL if command_id is a native action.
 ---@param command_id integer
@@ -7515,13 +7536,13 @@ function reaper.NF_Win32_GetSystemMetrics(nIndex) end
 ---    reaper.atexit(exit3)
 ---    
 ---will run exit1, exit2 and then exit3, when exiting the script.You can have up to 1024 atexit-functions set in one script, no matter if its different or the same function.
----@param function function
-function reaper.atexit(function) end
+---@param function_ function
+function reaper.atexit(function_) end
 
 ---Adds code to be called back by REAPER. Used to create persistent ReaScripts that continue to run and respond to input, while the user does other tasks. Identical to runloop().Note that no undo point will be automatically created when the script finishes, unless you create it explicitly.There can be 1024 defer-nodes running at the same time in one script, no matter if it's different functions or the same one.
----@param function function
+---@param function_ function
 ---@return boolean retval
-function reaper.defer(function) end
+function reaper.defer(function_) end
 
 ---Returns contextual information about the script, typically MIDI/OSC input values.val will be set to a relative or absolute value depending on mode (=0: absolute mode, &gt;0: relative modes). resolution=127 for 7-bit resolution, =16383 for 14-bit resolution.Notes: sectionID, and cmdID will be set to -1 if the script is not part of the action list. mode, resolution and val will be set to -1 if the script was not triggered via MIDI/OSC.For relative mode bindings, calling get_action_context() will return the accumulated relative value in decoded form (not 65 or 63, but +1/-1 etc), and clear the internal state. So if you call it multiple times, the first one will return the accumulated value, and the second will always return 0.
 ---@return boolean is_new_value, string filename_with_path, integer sectionID, integer cmdID, integer mode, integer resolution, integer val
@@ -7902,9 +7923,9 @@ function gfx.update() end
 function reaper.new_array() end
 
 ---Adds code to be called back by REAPER. Used to create persistent ReaScripts that continue to run and respond to input, while the user does other tasks. Identical to defer().Note that no undo point will be automatically created when the script finishes, unless you create it explicitly.
----@param function function
+---@param function_ function
 ---@return boolean retval
-function reaper.runloop(function) end
+function reaper.runloop(function_) end
 
 ---Sets the value of zero or more items in the array. If value not specified, 0.0 is used. offset is 1-based, if size omitted then the maximum amount available will be set.
 ---@return boolean retval
