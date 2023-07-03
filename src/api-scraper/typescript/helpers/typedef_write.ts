@@ -29,7 +29,7 @@ main().catch((err) => {
  */
 /* function mything(tracks) end ---@type function (tracks: table<number, MediaTrack>): table<number, ItemPosition> */
 export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
-  const metaTag = "---@meta\n"
+  const metaTag = "---@meta\nreaper = {}\n"
   const formattedDefinitions = definitions
     .map((def) => {
       if (
@@ -37,24 +37,38 @@ export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
         hasLuaProp(def.functioncall) &&
         hasLuaProp(def.signatures)
       ) {
-        let { method_name, return_values, parameters } = def.signatures.lua
+        let { return_values, parameters } = def.signatures.lua
         const params_decl = parameters.map((element) => element.identifier).join(", ")
-        const params_type = parameters.map((element) => formatParamRetValElment(element)).join(", ")
-        const return_values_type = return_values
-          .map((element) => formatParamRetValElment(element))
-          .join(", ")
-        const returnstmt = return_values_type !== "" ? ": " + return_values_type : ""
-        return `function ${formatLuaFunctioncall(
+        const params_type = parameters.map((element) => formatParam(element)).join("")
+        const ret_type = return_values.map((element) => formatReturn(element)).join(", ")
+
+        const return_values_type = ret_type.length > 0 ? "---@return " + ret_type + "\n" : ""
+        let desc = ""
+        if (def.description.description.length > 0) {
+          desc =
+            "---" +
+            def.description.description.replace(/\n\n/gm, "").replace(/[\r\n]/gm, "\n---") +
+            "\n"
+        }
+
+        return `${desc}${params_type}${return_values_type}function ${formatLuaFunctioncall(
           def.functioncall.lua
-        )}(${params_decl}) end ---@type function (${params_type})${returnstmt}\n`
+        )}(${params_decl}) end\n`
       } else return ""
     })
     .filter((str) => str !== "")
   return metaTag + formattedDefinitions.join("\n")
 }
-export function formatParamRetValElment(element: ReturnValueElement): string {
+function formatReturn(element: ReturnValueElement): string {
   const { type, identifier } = element
-  return `${!!identifier ? `${identifier}: ` : ""}${type}`
+  return `${type} ${identifier || ""}`
+}
+
+function formatParam(element: ReturnValueElement): string {
+  // lua output per param must be
+  // "---@param paramname paramtype"
+  const { type, identifier } = element
+  return `---@param ${identifier || ""} ${type}\n`
 }
 
 // check that the signature is a SignaturesClass
