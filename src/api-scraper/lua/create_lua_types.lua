@@ -1,5 +1,7 @@
 local parser = require("parser")
 
+---check that the signature is a SignaturesClass
+---and has a lua or eel property
 ---@param signature unknown
 local function isSignaturesClass(signature)
 	return type(signature) == "table" and (signature.lua ~= nil or signature.eel ~= nil)
@@ -10,6 +12,10 @@ local function hasLuaProp(Table)
 	return Table.lua ~= nil
 end
 
+
+---api docs have a lot of reserved words
+---in them, so we're just adding an undersore at the end of them
+---so they get parsed correctly by lua
 ---@param str string
 ---@return string
 local function rewriteLuaReservedWords(str)
@@ -24,6 +30,18 @@ local function rewriteLuaReservedWords(str)
 	end
 end
 
+---format ReturnValueElement's params
+---according to their use, whether for
+---a params in a function declaration docstring,
+---or a param type, or a return type.
+---
+--- The format followed is
+---```lua
+--- ---@param one_param_perline type_of_param
+--- ---@param another_param_here type_of_param
+--- ---@return retval_type ret_val_name, retval_type another_retval_name
+--- function(one_param_perline, another_param_here) end
+---```
 ---@param parameters ReturnValueElement[]
 ---@param decl_or_type "declaration" | "type" | "return"
 local function rewriteParams(parameters, decl_or_type)
@@ -51,6 +69,7 @@ local function formatDescription(def)
 	return "---" .. t .. "\n"
 end
 
+---get the function call without its parameters and annotations
 ---@param fncall string
 ---@return string
 local function formatLuaFunctionCall(fncall)
@@ -81,6 +100,7 @@ local function formatDefinition(def)
 end
 
 
+---map each definition into à LuaDoc string
 ---@param definitions ReaScriptUSDocML[]
 local function formatDefinitions(definitions)
 	---@type string[]
@@ -103,6 +123,16 @@ local function concatenateTable(T)
 	return ret_str
 end
 
+---	write a  typedefinitions file from the provided table
+---file starts with "---@meta"
+---then for each function mentioned in the table
+--- follow the pattern:
+--- ```lua
+--- ---@param param param_type
+--- ---@param param2 param2_type
+--- ---@return return_type ret_val, return_type2 ret_val2
+--- function mything(tracks) end
+---```
 ---@param definitions ReaScriptUSDocML[]
 local function writeLuaTypes(definitions)
 	local metaTag = "---@meta\nreaper = {}\ngfx = {}\n\n"
@@ -111,6 +141,7 @@ local function writeLuaTypes(definitions)
 end
 
 
+---write the lua types definitions to a file in the resources folder, at the root
 ---@param definitions ReaScriptUSDocML[]
 local function main(definitions)
 	local lua_types = writeLuaTypes(definitions)
