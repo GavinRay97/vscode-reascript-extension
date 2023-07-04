@@ -9,10 +9,14 @@ import {
 import * as fs from "fs/promises"
 const definitions = defs as ReaScriptUSDocML[]
 
+/**
+ * write the lua types definitions to a file in the resources folder, at the root
+ */
 async function main() {
   const luaTypes = writeLuaTypes(definitions)
 
-  const outpath = path.join(__dirname, "reaper-types.lua")
+  // write the types file to the resources folder in the root
+  const outpath = "resources/reaper-types.lua"
   await fs.writeFile(outpath, luaTypes)
 }
 
@@ -22,20 +26,18 @@ main().catch((err) => {
 
 /**
  * 	write a  typedefinitions file from the provided table
-	file starts with "---@meta"
-	then for each function mentioned in the table
-		create
-		"---@type function({params}):retval"
- */
-/* function mything(tracks) end ---@type function (tracks: table<number, MediaTrack>): table<number, ItemPosition> */
-/**
- *
- * remove lua's reserved words
- * end in function
- * @returns
+ *	file starts with "---@meta"
+ *	then for each function mentioned in the table
+ *  follow the pattern:
+ *  ```lua
+ *  ---@param param param_type
+ *  ---@param param2 param2_type
+ *  ---@return return_type ret_val, return_type2 ret_val2
+ *  function mything(tracks) end
+ * ```
  */
 export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
-  const metaTag = "---@meta\nreaper = {}\n"
+  const metaTag = "---@meta\nreaper = {}\ngfx = {}\n"
   const formattedDefinitions = definitions
     .map((def) => {
       if (
@@ -65,8 +67,14 @@ export function writeLuaTypes(definitions: ReaScriptUSDocML[]) {
       } else return ""
     })
     .filter((str) => str !== "")
-  return metaTag + writeReaperTypes() + formattedDefinitions.join("\n")
+
+  return metaTag + /* writeReaperTypes() + */ formattedDefinitions.join("\n")
 }
+/**
+ * api docs have a lot of reserved words
+ * in them, so we're just adding an undersore at the end of them
+ * so they get parsed correctly by lua
+ */
 function rewriteLuaReservedWords(str: string) {
   if (str === "end") return "end_"
   if (str === "function") return "function_"
@@ -79,6 +87,10 @@ function formatReturn(element: ReturnValueElement): string {
   return `${type} ${rewriteLuaReservedWords(identifier || "")}`
 }
 
+/**
+ * params annotations are one per line,
+ * it's not possible to have multiple params on one line
+ */
 function formatParam(element: ReturnValueElement): string {
   // lua output per param must be
   // "---@param paramname paramtype"
@@ -87,7 +99,7 @@ function formatParam(element: ReturnValueElement): string {
 }
 
 // check that the signature is a SignaturesClass
-// and has a lua property
+// and has a lua or eel property
 function isSignaturesClass(signature: unknown): signature is SignaturesClass {
   return (
     !!signature &&
@@ -102,6 +114,9 @@ function hasLuaProp<T extends Record<string, any>>(obj: T): obj is T & { lua: st
   return "lua" in obj && !!obj.lua
 }
 
+/**
+ * get the function call without its parameters and annotations
+ */
 function formatLuaFunctioncall(functioncall: Functioncall["lua"]) {
   const str = functioncall!
     .split("")
@@ -115,6 +130,14 @@ function formatLuaFunctioncall(functioncall: Functioncall["lua"]) {
   return str
 }
 
+/**
+ * This is meant to provide a list of types that are available in reaper.
+ *
+ * Sadly, it's not great, atm: lua's annotations don't have a way to
+ * specify abstract types, so if we just use `---@type MediaTrack`
+ * it will cast it as unknown, and accept any value passed in.
+ * I'll open an issue on the LuaLS repo, see if there's a way around.
+ */
 function writeReaperTypes() {
   const reaperTypes = [
     "MediaTrack",
@@ -141,7 +164,7 @@ function writeReaperTypes() {
   ]
   return reaperTypes
     .map((type) => {
-      return `---@alias ${type} unknown\n`
+      return `---@type ${type}\n`
     })
     .join("")
 }

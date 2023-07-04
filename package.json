@@ -13,14 +13,26 @@
   "engines": {
     "vscode": "^1.32.0"
   },
+  "extensionDependencies": [
+    "sumneko.lua"
+  ],
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:lua",
+    "onLanguage:EEL",
+    "onLanguage:Jesusonic",
+    "onLanguage:plaintext"
   ],
   "contributes": {
     "languages": [
+      {
+        "id": "lua",
+        "extensions": [
+          ".lua"
+        ]
+      },
       {
         "id": "EEL",
         "extensions": [
@@ -28,7 +40,8 @@
         ]
       },
       {
-        "id": "Jesusonic"
+        "id": "Jesusonic",
+        "extension": ".jsfx"
       },
       {
         "id": "WALTER",
@@ -57,9 +70,7 @@
   },
   "main": "./out/extension.js",
   "scripts": {
-    "test": "npx mocha --require ts-node/register src/**/*.spec.ts",
     "print-lua-types": "npx ts-node src/api-scraper/typescript/helpers/typedef_write.ts",
-    "read-xml-doc": "npx ts-node src/api-scraper/typescript/parse_xml.ts",
     "scrape-ultraschall": "npx ts-node src/api-scraper/fix-and-escape-ultraschall-xml.ts",
     "scrape-api": "npx ts-node ./src/api-scraper/OLD_scrape-reascript-api.ts",
     "vscode:prepublish": "yarn compile",

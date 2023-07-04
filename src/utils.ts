@@ -43,3 +43,32 @@ export function convertReaScriptDefinitionToSignatureInformation(
 
   return signature
 }
+
+/**
+ * Add the lua types to the workspace settings.
+ *
+ * This is done by feeding the type-declarations file's path to the workspace settings.
+ *
+ * Lua's lsp will pick it up from there and take care of providing typechecking
+ * and intellisense to the user.
+ */
+export const updateWorkspaceSettings = () => {
+  // Define the file pattern or extension for Lua files
+  const luaFilePattern = "**/*.lua"
+
+  // Check if the workspace contains Lua files
+  vscode.workspace.findFiles(luaFilePattern).then((files) => {
+    if (files.length > 0) {
+      // Get the configuration object for the current workspace
+      const configuration = vscode.workspace.getConfiguration()
+      const extensionContext = vscode.extensions.getExtension("gavinray.reascript")?.extensionPath
+      const libraryPath = `${extensionContext}/resources/reaper-types.lua`
+      // Update the value of a setting
+      configuration.update(
+        "Lua.workspace.library",
+        [libraryPath],
+        vscode.ConfigurationTarget.Workspace
+      )
+    }
+  })
+}
