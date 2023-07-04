@@ -1,4 +1,4 @@
-import { XML2JSONParseDoc, ChapterContexts } from "../xml_json_types"
+import { XML2JSONParseDoc, ChapterContexts } from "./xml_json_types"
 
 type KeyTypes = {
   commonKeys: Set<string>

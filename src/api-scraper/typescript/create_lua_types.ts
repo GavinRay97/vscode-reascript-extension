@@ -1,11 +1,11 @@
 import path = require("path")
-import * as defs from "../../lua/results.json"
+import * as defs from "../lua/results.json"
 import {
   ReaScriptUSDocML,
   ReturnValueElement,
   Functioncall,
   SignaturesClass,
-} from "../reascript-USDocML.types"
+} from "./reascript-USDocML.types"
 import * as fs from "fs/promises"
 const definitions = defs as ReaScriptUSDocML[]
 
