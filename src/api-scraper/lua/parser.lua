@@ -261,7 +261,7 @@ local function process_USDocML_text(filepath)
     return results
 end
 
-local function main()
+local function parse()
     local unfiltered_api = process_USDocML_text("./docs/reaper-apidocs.USDocML")
 
     local sections_to_filter = {
@@ -284,12 +284,16 @@ local function main()
 
     local reascript_core_api =
         table.filter(
-        unfiltered_api,
-        function(it)
-            return not_an_intro_section(it)
-        end
-    )
+            unfiltered_api,
+            function(it)
+                return not_an_intro_section(it)
+            end
+        )
+    return reascript_core_api
+end
 
+local function main()
+    local reascript_core_api = parse()
     local outfile = io.open("results.json", "w")
     outfile:write(json.encode(reascript_core_api))
     outfile:close()
