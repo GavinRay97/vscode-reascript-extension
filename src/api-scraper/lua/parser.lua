@@ -4,6 +4,8 @@ local ultraschall = require("ultraschall_doc_engine")
 local json = require("json")
 local pretty_print = require("pprint")
 
+local parser = {}
+
 ---------------------
 -- HELPERS
 ---------------------
@@ -261,8 +263,9 @@ local function process_USDocML_text(filepath)
     return results
 end
 
-local function parse()
-    local unfiltered_api = process_USDocML_text("./docs/reaper-apidocs.USDocML")
+function parser.parse()
+    local unfiltered_api = process_USDocML_text(
+        "./docs/Reaper_Api_Documentation.USDocML")
 
     local sections_to_filter = {
         "1 Introduction to ReaScript",
@@ -292,7 +295,7 @@ local function parse()
     return reascript_core_api
 end
 
-local function writeJSON()
+function parser.writeJSON()
     local reascript_core_api = parse()
     local outfile = io.open("results.json", "w")
     outfile:write(json.encode(reascript_core_api))
@@ -301,9 +304,4 @@ local function writeJSON()
     print("Finished!")
 end
 
----Moving the json writer into an exported table.
----For now, I can't get the call to this table from create_lua_types.lua to work.
-local parser = {}
-parser.parse = parse
-parse.writeJSON = writeJSON
 return parser
