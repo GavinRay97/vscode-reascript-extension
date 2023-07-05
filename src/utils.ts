@@ -62,7 +62,7 @@ export const updateWorkspaceSettings = () => {
       // Get the configuration object for the current workspace
       const configuration = vscode.workspace.getConfiguration()
       const extensionContext = vscode.extensions.getExtension(
-        "antoinebalaine.reascript"
+        "antoinebalaine.reascript-docs"
       )?.extensionPath
       const libraryPath = `${extensionContext}/resources/reaper-types.lua`
       // Update the value of a setting
