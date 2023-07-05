@@ -1,8 +1,9 @@
 {
   "name": "reascript-docs",
   "displayName": "REAPER ReaScript",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "publisher": "antoinebalaine",
+  "icon": "reaperlogo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/AntoineBalaine/vscode-reascript-extension"
