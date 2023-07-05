@@ -21,7 +21,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 --
-local json = {_version = "0.1.2"}
+local json = { _version = "0.1.2" }
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -39,7 +39,7 @@ local escape_char_map = {
     ["\t"] = "t"
 }
 
-local escape_char_map_inv = {["/"] = "/"}
+local escape_char_map_inv = { ["/"] = "/" }
 for k, v in pairs(escape_char_map) do escape_char_map_inv[v] = k end
 
 local function escape_char(c)
@@ -71,7 +71,6 @@ local function encode_table(val, stack)
         for i, v in ipairs(val) do table.insert(res, encode(v, stack)) end
         stack[val] = nil
         return "[" .. table.concat(res, ",") .. "]"
-
     else
         -- Treat as an object
         for k, v in pairs(val) do
@@ -131,7 +130,7 @@ local delim_chars = create_set(" ", "\t", "\r", "\n", "]", "}", ",")
 local escape_chars = create_set("\\", "/", '"', "b", "f", "n", "r", "t", "u")
 local literals = create_set("true", "false", "null")
 
-local literal_map = {["true"] = true, ["false"] = false, ["null"] = nil}
+local literal_map = { ["true"] = true, ["false"] = false, ["null"] = nil }
 
 local function next_char(str, idx, set, negate)
     for i = idx, #str do if set[str:sub(i, i)] ~= negate then return i end end
@@ -160,10 +159,10 @@ local function codepoint_to_utf8(n)
         return string.char(f(n / 64) + 192, n % 64 + 128)
     elseif n <= 0xffff then
         return string.char(f(n / 4096) + 224, f(n % 4096 / 64) + 128,
-                           n % 64 + 128)
+            n % 64 + 128)
     elseif n <= 0x10ffff then
         return string.char(f(n / 262144) + 240, f(n % 262144 / 4096) + 128,
-                           f(n % 4096 / 64) + 128, n % 64 + 128)
+            f(n % 4096 / 64) + 128, n % 64 + 128)
     end
     error(string.format("invalid unicode codepoint '%x'", n))
 end
@@ -190,27 +189,25 @@ local function parse_string(str, i)
 
         if x < 32 then
             decode_error(str, j, "control character in string")
-
         elseif x == 92 then -- `\`: Escape
             res = res .. str:sub(k, j - 1)
             j = j + 1
             local c = str:sub(j, j)
             if c == "u" then
                 local hex = str:match("^[dD][89aAbB]%x%x\\u%x%x%x%x", j + 1) or
-                                str:match("^%x%x%x%x", j + 1) or
-                                decode_error(str, j - 1,
-                                             "invalid unicode escape in string")
+                    str:match("^%x%x%x%x", j + 1) or
+                    decode_error(str, j - 1,
+                        "invalid unicode escape in string")
                 res = res .. parse_unicode_escape(hex)
                 j = j + #hex
             else
                 if not escape_chars[c] then
                     decode_error(str, j - 1,
-                                 "invalid escape char '" .. c .. "' in string")
+                        "invalid escape char '" .. c .. "' in string")
                 end
                 res = res .. escape_char_map_inv[c]
             end
             k = j + 1
-
         elseif x == 34 then -- `"`: End of string
             res = res .. str:sub(k, j - 1)
             return res, j + 1

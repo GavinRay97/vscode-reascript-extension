@@ -4,6 +4,8 @@ local ultraschall = require("ultraschall_doc_engine")
 local json = require("json")
 local pretty_print = require("pprint")
 
+local parser = {}
+
 ---------------------
 -- HELPERS
 ---------------------
@@ -45,12 +47,12 @@ end
 
 local function process_title(doctext, idx)
     local title, spok_lang = ultraschall.Docs_GetUSDocBloc_Title(doctext, idx)
-    return {title = title, spok_lang = spok_lang}
+    return { title = title, spok_lang = spok_lang }
 end
 
 local function process_chapter_context(doctext, idx)
     local count, chapters, spok_lang = ultraschall.Docs_GetUSDocBloc_ChapterContext(doctext, idx)
-    return {count = count, chapters = chapters, spok_lang = spok_lang}
+    return { count = count, chapters = chapters, spok_lang = spok_lang }
 end
 
 local function process_description(doctext, idx)
@@ -66,7 +68,7 @@ end
 
 local function process_functioncall(doctext, idx)
     local functioncall, prog_lang = ultraschall.Docs_GetUSDocBloc_Functioncall(doctext, idx)
-    return {functioncall = functioncall, prog_lang = prog_lang}
+    return { functioncall = functioncall, prog_lang = prog_lang }
 end
 
 local function process_target_document(doctext)
@@ -79,7 +81,7 @@ end
 
 local function process_tags(doctext, idx)
     local tags_count, tags = ultraschall.Docs_GetUSDocBloc_Tags(doctext, idx)
-    return {tags_count = tags_count, tags = tags}
+    return { tags_count = tags_count, tags = tags }
 end
 
 local function process_params(doctext, idx)
@@ -107,7 +109,7 @@ end
 
 local function process_requires(doctext)
     local count, requires, requires_alt = ultraschall.Docs_GetUSDocBloc_Requires(doctext)
-    return {count = count, requires = requires, requires_alt = requires_alt}
+    return { count = count, requires = requires, requires_alt = requires_alt }
 end
 
 local function parse_eel_method_signature(functioncall_string)
@@ -146,7 +148,7 @@ local function parse_eel_method_signature(functioncall_string)
         end
         if #params == 3 then
             signature.parameters[#signature.parameters + 1] = {
-                modifier = params[1], -- "optional"
+                modifier = params[1],  -- "optional"
                 type_name = params[2], -- "bool"
                 identifier = params[3] -- "someVariable"
             }
@@ -177,7 +179,7 @@ local function parse_lua_method_signature(functioncall_string)
     if not string.find(functioncall_string, "=") then
         local parameters = string.gmatch(functioncall_string, type_identifier_regex)
         for type_name, identifier in parameters do
-            signature.parameters[#signature.parameters + 1] = {type = type_name, identifier = identifier}
+            signature.parameters[#signature.parameters + 1] = { type = type_name, identifier = identifier }
         end
         return signature
     end
@@ -187,18 +189,18 @@ local function parse_lua_method_signature(functioncall_string)
 
     local parameters = string.gmatch(methodcall, type_identifier_regex)
     for type_name, identifier in parameters do
-        signature.parameters[#signature.parameters + 1] = {type = type_name, identifier = identifier}
+        signature.parameters[#signature.parameters + 1] = { type = type_name, identifier = identifier }
     end
 
     -- If return_vals is a string, only a single return value
     if #return_vals == 1 then
         local type_name, identifier = table.unpack(split(return_vals[1], " "))
-        signature.return_values[#signature.return_values + 1] = {type = type_name, identifier = identifier}
+        signature.return_values[#signature.return_values + 1] = { type = type_name, identifier = identifier }
         return signature
     end
 
     for type_name, identifier in string.gmatch(return_val_string, type_identifier_regex) do
-        signature.return_values[#signature.return_values + 1] = {type = type_name, identifier = identifier}
+        signature.return_values[#signature.return_values + 1] = { type = type_name, identifier = identifier }
     end
 
     return signature
@@ -261,8 +263,9 @@ local function process_USDocML_text(filepath)
     return results
 end
 
-local function main()
-    local unfiltered_api = process_USDocML_text("./docs/reaper-apidocs.USDocML")
+function parser.parse()
+    local unfiltered_api = process_USDocML_text(
+        "./docs/Reaper_Api_Documentation.USDocML")
 
     local sections_to_filter = {
         "1 Introduction to ReaScript",
@@ -284,12 +287,16 @@ local function main()
 
     local reascript_core_api =
         table.filter(
-        unfiltered_api,
-        function(it)
-            return not_an_intro_section(it)
-        end
-    )
+            unfiltered_api,
+            function(it)
+                return not_an_intro_section(it)
+            end
+        )
+    return reascript_core_api
+end
 
+function parser.writeJSON()
+    local reascript_core_api = parse()
     local outfile = io.open("results.json", "w")
     outfile:write(json.encode(reascript_core_api))
     outfile:close()
@@ -297,4 +304,4 @@ local function main()
     print("Finished!")
 end
 
-main()
+return parser

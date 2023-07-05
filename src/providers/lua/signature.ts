@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import { ReaScriptUSDocML } from "../../api-scraper/reascript-USDocML.types"
+import { ReaScriptUSDocML } from "../../api-scraper/typescript/reascript-USDocML.types"
 import { convertReaScriptDefinitionToSignatureInformation } from "../../utils"
 
 export class LuaSignatureHelpProvider implements vscode.SignatureHelpProvider {

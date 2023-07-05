@@ -1,12 +1,37 @@
 # ReaScript VS Code Extension
 
 An extension for Reaper's ReaScript API methods in VS Code.
-Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
+Provides type-checking in lua, intellisense/Autocomplete, and doc-comments on hover for all functions.
 
 ## Changelog
+- 0.0.7 (July 5th 2023)
+  - add extension icon
 
-- 0.0.1
-  - Initial version
+- 0.0.6 (July 5th 2023)
+  - update extension credentials to activate only for lua/eel/jsfx/txt files
+  - declare extension dependency using [Lua-LSP](https://github.com/LuaLS/lua-language-server) 
+  - create type declaration files for reaper-api, including reaImGui functions
+  - update documentation to [ultraschall's api docs v.4.9](https://github.com/Ultraschall/ultraschall-lua-api-for-reaper/releases/tag/4.9)
+  - bring type declaration files into workspace scope when the extension activates
+- 0.0.5 (1/18/21)
+  - Fixed bug with signature completion
+  - Refactored providers to classes by feature, in individual folders, implementing the provider API for that feature:
+    - ```ts
+      // In "src/providers/eel/completion.ts"
+      class EelCompletionItemProvider implements vscode.CompletionItemProvider {}
+      ```
+
+- 0.0.4 (1/18/21)
+
+  - **Added syntax highlighting for Eel/Jesusonic/WALTER (all credit to Breeder's TextMate grammar file, see copyright notice in repo)**
+  - **Added intellisense/autocomplete for Eel/Jesusonic**
+  - Method signatures now show the return types. IE, when pressing `(` to invoke `reaper.AddMediaItemToTrack`, it shows `MediaItem tr = reaper.AddMediaItemToTrack()`
+  - Large internal refactor for the shape of the JSON document used to store ReaScript functions. Better parser in Lua using Ultraschall API methods for USDocML to generate this.
+
+- 0.0.3 (1/10/21)
+
+  - Fixed issue where autocomplete was case-sensitive if trying to autocomplete a method preceeding a dot, IE "getmedia" expected to trigger "reaper.GetMedia\*\* but didn't
+
 - 0.0.2 (1/6/2021)
 
   - Added scraper and parser to grab docs from Ultraschall ReaScript API, and process the important stringified fields into JSON
@@ -19,23 +44,5 @@ Provides Intellisense/Autocomplete, and doc-comments on hover for all functions.
   - Intellisense/Autocomplete now works without having to prefix the method with "reaper." and "gfx." (still need to make this a toggleable option)
   - **NOTE**: A big thank-you to Meo-Mespotine for writing/maintaining the Ultraschall docs, and also Extremeraym for his Node function that sanitizes the XML format so that it's properly parseable.
 
-- 0.0.3 (1/10/21)
-
-  - Fixed issue where autocomplete was case-sensitive if trying to autocomplete a method preceeding a dot, IE "getmedia" expected to trigger "reaper.GetMedia\*\* but didn't
-
-- 0.0.4 (1/18/21)
-
-  - **Added syntax highlighting for Eel/Jesusonic/WALTER (all credit to Breeder's TextMate grammar file, see copyright notice in repo)**
-  - **Added intellisense/autocomplete for Eel/Jesusonic**
-  - Method signatures now show the return types. IE, when pressing `(` to invoke `reaper.AddMediaItemToTrack`, it shows `MediaItem tr = reaper.AddMediaItemToTrack()`
-  - Large internal refactor for the shape of the JSON document used to store ReaScript functions. Better parser in Lua using Ultraschall API methods for USDocML to generate this.
-
-- 0.0.5 (1/18/21)
-  - Fixed bug with signature completion
-  - Refactored providers to classes by feature, in individual folders, implementing the provider API for that feature:
-    - ```ts
-      // In "src/providers/eel/completion.ts"
-      class EelCompletionItemProvider implements vscode.CompletionItemProvider {}
-      ```
-
-![Demo](vscode-reascript-extension-demo.gif)
+- 0.0.1
+  - Initial version
