@@ -292,7 +292,7 @@ local function parse()
     return reascript_core_api
 end
 
-local function main()
+local function writeJSON()
     local reascript_core_api = parse()
     local outfile = io.open("results.json", "w")
     outfile:write(json.encode(reascript_core_api))
@@ -303,10 +303,7 @@ end
 
 ---Moving the json writer into an exported table.
 ---For now, I can't get the call to this table from create_lua_types.lua to work.
----
----However the functions' logics are sound - I tested them
----by having them all in the same file.
-parser = {}
+local parser = {}
 parser.parse = parse
-parse.main = main
+parse.writeJSON = writeJSON
 return parser

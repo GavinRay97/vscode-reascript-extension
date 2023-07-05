@@ -1,5 +1,3 @@
-local parser = require("parser")
-
 ---check that the signature is a SignaturesClass
 ---and has a lua or eel property
 ---@param signature unknown
@@ -140,10 +138,11 @@ local function writeLuaTypes(definitions)
 	return metaTag .. concatenateTable(formattedDefinitions)
 end
 
+local create_lua_types = {}
 
 ---write the lua types definitions to a file in the resources folder, at the root
 ---@param definitions ReaScriptUSDocML[]
-local function main(definitions)
+function create_lua_types.create_lua_types(definitions)
 	local lua_types = writeLuaTypes(definitions)
 	local outpath = "resources/reaper-types.lua"
 
@@ -156,6 +155,4 @@ local function main(definitions)
 	end
 end
 
----@type ReaScriptUSDocML
-local definitions = parser()
-main(definitions)
+return create_lua_types
