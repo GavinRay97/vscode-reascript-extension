@@ -140,7 +140,6 @@ end
 -- "parameters" and "return_values", which have fields "identifier" and "type"
 local function parse_lua_method_signature(functioncall_string)
     local method_identifier_regex = "([_%w]+%.[_%w]+).+%)"
-    local type_identifier_regex = "([_%w]+) ([_%w]+),?"
 
     local _, _, method_name = string.find(functioncall_string, method_identifier_regex)
 
@@ -159,7 +158,7 @@ local function parse_lua_method_signature(functioncall_string)
             signature.parameters[#signature.parameters + 1] = retval
         end
         local retval_string = functioncall_string:reverse():gsub("%)[^%(]*%(", ""):gsub("[^%s]* ", ""):reverse():trim()
-        if not retval_string == method_name then
+        if retval_string ~= method_name then
             local r = helpers.get_retvals(retval_string)
             for _, retval in ipairs(r) do
                 signature.return_values[#signature.return_values + 1] = retval

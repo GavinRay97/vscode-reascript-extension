@@ -91,7 +91,7 @@ end
 ---@param def ReaScriptUSDocML
 ---@return string
 local function formatDefinition(def)
-	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) and isNotImGui(def.functioncall) then
+	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) --[[ and isNotImGui(def.functioncall)  ]] then
 		local parameters = def.signatures.lua.parameters
 		local return_values = def.signatures.lua.return_values
 
