@@ -703,7 +703,7 @@ function reaper.EditTempoTimeSigMarker(project, markerindex) end
 ---@param r.top integer
 ---@param r.right integer
 ---@param r.bot integer
----@return integer r, integer r, integer r, integer r
+---@return integer r.left, integer r.top, integer r.right, integer r.bot
 function reaper.EnsureNotCompletelyOffscreen(r.left, r.top, r.right, r.bot) end
 
 ---List the files in the "path" directory. Returns NULL/nil when all files have been listed. Use fileindex = -1 to force re-read of directory (invalidate cache). 
@@ -749,14 +749,14 @@ function reaper.EnumProjectMarkers3(proj, idx) end
 ---Get ReaProject-object and filename of a project.
 ---idx=-1 for current project,projfn can be NULL if not interested in filename. use idx 0x40000000 for currently rendering project, if any.
 ---@param idx integer
----@return ReaProject retval, optional string
+---@return ReaProject retval, string|nil projfn
 function reaper.EnumProjects(idx) end
 
 ---Enumerate the data stored with the project for a specific extname. Returns false when there is no more data.
 ---@param proj ReaProject
 ---@param extname string
 ---@param idx integer
----@return boolean retval, optional string, optional string
+---@return boolean retval, string|nil key, string|nil val
 function reaper.EnumProjExtState(proj, extname, idx) end
 
 ---Enumerate which tracks will be rendered within this region when using the region render matrix. When called with rendertrack==0, the function returns the first track that will be rendered (which may be the master track); rendertrack==1 will return the next track rendered, and so on. The function returns NULL when there are no more tracks that will be rendered within this region.
@@ -1108,7 +1108,7 @@ function reaper.GetInputActivityLevel(input_id) end
 function reaper.GetInputChannelName(channelIndex) end
 
 ---Gets the audio device input/output latency in samples
----@return number inputlatency, number outputLatency
+---@return number|nil retval, number outputLatency
 function reaper.GetInputOutputLatency() end
 
 ---returns time of relevant edit, set which_item to the pcm_source (if applicable), flags (if specified) will be set to 1 for edge resizing, 2 for fade change, 4 for item move, 8 for item slip edit (edit cursor time or start of item)
@@ -1142,7 +1142,7 @@ function reaper.GetLastColorThemeFile() end
 ---markeridx and regionidx are returned not necessarily as the displayed marker/region index, but as the index that can be passed to EnumProjectMarkers. Either or both of markeridx and regionidx may be NULL. 
 ---@param proj ReaProject
 ---@param time number
----@return integer markeridx, integer regionidx
+---@return integer|nil retval, integer regionidx
 function reaper.GetLastMarkerAndCurRegion(proj, time) end
 
 ---Returns the last touched track, it's last touched parameter and tracknumber.The low word of tracknumber is the 1-based track index -- 0 means the master track, 1 means track 1, etc. 
@@ -1756,7 +1756,7 @@ function reaper.GetSetProjectAuthor(proj, set, author) end
 ---@param division? number
 ---@param swingmode? integer
 ---@param swingamt? number
----@return integer retval, optional number, optional integer, optional number
+---@return integer retval, number|nil division, integer|nil swingmode, number|nil swingamt
 function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) end
 
 ---Get or set project information.
@@ -1964,7 +1964,7 @@ function reaper.GetTakeEnvelopeByName(take, envname) end
 ---Get information about a take marker. Returns the position in media item source time, or -1 if the take marker does not exist.
 ---@param take MediaItem_Take
 ---@param idx integer
----@return number position, string name, optional integer
+---@return number position, string name, integer|nil color
 function reaper.GetTakeMarker(take, idx) end
 
 ---Retruns the filename of the mediafile in a take. returns NULL if the take is not valid
@@ -1983,7 +1983,7 @@ function reaper.GetTakeNumStretchMarkers(take) end
 ---If position/source position are used to find marker position, their values are not updated.
 ---@param take MediaItem_Take
 ---@param idx integer
----@return integer retval, number pos, optional number
+---@return integer retval, number pos, number|nil srcpos
 function reaper.GetTakeStretchMarker(take, idx) end
 
 ---See SetTakeStretchMarkerSlope
@@ -2024,7 +2024,7 @@ function reaper.GetThemeColor(ini_key, flags) end
 ---If a track panel is hit, string will begin with "tcp" or "mcp" or "tcp.mute" etc (future versions may append additional information). May return NULL with valid info string to indicate non-track thing.
 ---@param screen_x integer
 ---@param screen_y integer
----@return optional MediaTrack, string info
+---@return MediaTrack|nil tr, string info
 function reaper.GetThingFromPoint(screen_x, screen_y) end
 
 ---Return toggle-state of an action. See GetToggleCommandStateEx.
@@ -2086,7 +2086,7 @@ function reaper.GetTrackEnvelopeByName(track, envname) end
 ---Returns the track from the screen coordinates specified. If the screen coordinates refer to a window associated to the track (such as FX), the track will be returned. infoOutOptional will be set to 1 if it is likely an envelope, 2 if it is likely a track FX.Note: You can not get the track at screen-coordinates, where it is hidden by other windows.See GetThingFromPoint
 ---@param screen_x integer
 ---@param screen_y integer
----@return MediaTrack retval, optional integer
+---@return MediaTrack retval, integer|nil info
 function reaper.GetTrackFromPoint(screen_x, screen_y) end
 
 ---Get the guid of a MediaTrack
@@ -2456,7 +2456,7 @@ function reaper.joystick_destroy(device) end
 
 ---enumerates installed devices, returns GUID as a string
 ---@param index integer
----@return string retval, optional string
+---@return string retval, string|nil namestr
 function reaper.joystick_enum(index) end
 
 ---returns axis value (-1..1)
@@ -2472,7 +2472,7 @@ function reaper.joystick_getbuttonmask(dev) end
 
 ---returns button count
 ---@param dev joystick_device
----@return integer retval, optional integer, optional integer
+---@return integer retval, integer|nil axes, integer|nil povs
 function reaper.joystick_getinfo(dev) end
 
 ---returns POV value (usually 0..655.35, or 655.35 on error)
@@ -2667,7 +2667,7 @@ function reaper.MIDI_GetAllEvts(take) end
 ---Get MIDI CC event properties.
 ---@param take MediaItem_Take
 ---@param ccidx integer
----@return boolean retval, boolean selected, boolean muted, number ppqpos, integer chanmsg, integer number, integer msg2, integer msg3
+---@return boolean retval, boolean selected, boolean muted, number ppqpos, integer chanmsg, integer|nil chan, integer msg2, integer msg3
 function reaper.MIDI_GetCC(take, ccidx) end
 
 ---Get CC shape and bezier tension. See MIDI_GetCC, MIDI_SetCCShape
@@ -2684,7 +2684,7 @@ function reaper.MIDI_GetEvt(take, evtidx) end
 
 ---Returns the most recent MIDI editor grid size for this MIDI take, in QN. Swing is between 0 and 1. Note length is 0 if it follows the grid size.
 ---@param take MediaItem_Take
----@return number retval, optional number, optional number
+---@return number retval, number|nil swing, number|nil noteLen
 function reaper.MIDI_GetGrid(take) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. 
@@ -2756,7 +2756,7 @@ function reaper.MIDI_GetScale(take) end
 ---@param ppqpos? number
 ---@param type? integer
 ---@param msg? string
----@return boolean retval, optional boolean, optional boolean, optional number, optional integer, optional string
+---@return boolean retval, boolean|nil selected, boolean|nil muted, number|nil ppqpos, integer|nil type, string|nil msg
 function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, selected, muted, ppqpos, type, msg) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. See MIDI_GetHash
@@ -3380,6 +3380,7 @@ function reaper.ScaleFromEnvelopeMode(scaling_mode, val) end
 ---@param val number
 ---@return number retval
 function reaper.ScaleToEnvelopeMode(scaling_mode, val) end
+
 
 ---Selects or deselects all MediaItems in a project.
 ---@param proj ReaProject
@@ -4797,7 +4798,7 @@ function reaper.ThemeLayout_GetLayout(section, idx) end
 
 ---returns theme layout parameter. return value is cfg-name, or nil/empty if out of range.
 ---@param wp integer
----@return string retval, optional string, optional integer, optional integer, optional integer, optional integer
+---@return string retval, string|nil desc, integer|nil value, integer|nil defValue, integer|nil minValue, integer|nil maxValue
 function reaper.ThemeLayout_GetParameter(wp) end
 
 ---Refreshes all layouts
@@ -4852,7 +4853,7 @@ function reaper.TimeMap2_QNToTime(proj, qn) end
 ---if cdenom is non-NULL, will be set to the current time signature denominator.
 ---@param proj ReaProject
 ---@param tpos number
----@return number retval, optional integer, optional integer, optional number, optional integer
+---@return number retval, integer|nil measures, integer|nil cml, number|nil fullbeats, integer|nil cdenom
 function reaper.TimeMap2_timeToBeats(proj, tpos) end
 
 ---converts project time position to QN position.
@@ -4893,7 +4894,7 @@ function reaper.TimeMap_GetTimeSigAtTime(proj, time) end
 ---Find which measure the given QN position falls in.
 ---@param proj ReaProject
 ---@param qn number
----@return integer retval, optional number, optional number
+---@return integer retval, number|nil qnMeasureStart, number|nil qnMeasureEnd
 function reaper.TimeMap_QNToMeasures(proj, qn) end
 
 ---converts project QN position to time.
@@ -5658,7 +5659,7 @@ function reaper.BR_EnvGetPoint(envelope, id) end
 ---faderScaling: true if envelope uses fader scaling
 ---automationItemsOptions: -1->project default, &1=0->don't attach to underl. env., &1->attach to underl. env. on right side, &2->attach to underl. env. on both sides, &4: bypass underl. env.
 ---@param envelope BR_Envelope
----@return boolean active, boolean visible, boolean armed, boolean inLane, integer laneHeight, integer defaultShape, number minValue, number maxValue, number centerValue, integer type, boolean faderScaling, optional integer
+---@return boolean active, boolean visible, boolean armed, boolean inLane, integer laneHeight, integer defaultShape, number minValue, number maxValue, number centerValue, integer type, boolean faderScaling, integer|nil automationItemsOptions
 function reaper.BR_EnvGetProperties(envelope) end
 
 ---[BR] Set envelope point by id (zero-based) in the envelope object allocated with BR_EnvAlloc. To create point instead, pass id = -1. Note that if new point is inserted or existing point's time position is changed, points won't automatically get sorted. To do that, see BR_EnvSortPoints.
@@ -5697,7 +5698,7 @@ function reaper.BR_EnvValueAtPos(envelope, position) end
 
 ---[BR] Deprecated, see GetSet_ArrangeView2 (REAPER v5.12pre4+)Get start and end time position of arrange view. To set arrange view instead, see BR_SetArrangeView.
 ---@param proj ReaProject
----@return number startTime, number endTime
+---@return number|nil retval, number endTime
 function reaper.BR_GetArrangeView(proj) end
 
 ---[BR] Get closest grid division to position. Note that this functions is different from SnapToGrid in two regards. SnapToGrid() needs snap enabled to work and this one works always. 
@@ -7440,7 +7441,7 @@ function reaper.JS_Window_ClientToScreen(windowHWND, x, y) end
 ---@param h integer
 ---@param style? string
 ---@param ownerHWND identifier
----@return identifier retval, optional string
+---@return identifier retval, string|nil style
 function reaper.JS_Window_Create(title, className, x, y, w, h, style, ownerHWND) end
 
 ---Destroys the specified window.
@@ -7744,7 +7745,7 @@ function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 ---@param height integer
 ---@param ZOrder? string
 ---@param flags? string
----@return boolean retval, optional string, optional string
+---@return boolean retval, string|nil ZOrder, string|nil flags
 function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, ZOrder, flags) end
 
 ---Parameters:* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.           NOTE: API functions can scroll REAPER's windows, but cannot zoom them.  Instead, use actions such as "View: Zoom to one loop iteration".
@@ -8575,6 +8576,133 @@ function reaper.NF_UpdateSWSMarkerRegionSubWindow() end
 ---@return integer retval
 function reaper.NF_Win32_GetSystemMetrics(nIndex) end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---Adds code to be executed when the script finishes or is ended by the user. Typically used to clean up after the user terminates defer() or runloop() code.You can't defer this atexit-function, when it is run as exit-function, though, when it is run regularily before exiting the script.You can define more than one atexit-function. They will be run in the order they've been registered as atexit-functions.
 ---For example:    reaper.atexit(exit1)
 ---    reaper.atexit(exit2)
@@ -8711,7 +8839,7 @@ function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, dest
 ---@param wy? integer
 ---@param ww? integer
 ---@param wh? integer
----@return number querystate, optional integer, optional integer, optional integer, optional integer
+---@return number querystate, integer|nil window_x_position, integer|nil window_y_position, integer|nil window_width, integer|nil window_height
 function gfx.dock(v, wx, wy, ww, wh) end
 
 ---Draws the character (can be a numeric ASCII code as well), to gfx.x, gfx.y, and moves gfx.x over by the size of the character.
@@ -9102,6 +9230,151 @@ function {reaper.array}.resize() end
 ---@return table new_table
 function {reaper.array}.table(offset, size]) end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---Show the about dialog of the given package entry.
 ---The repository index is downloaded asynchronously if the cached copy doesn't exist or is older than one week.see ReaPack_GetOwner to get this parameter
 ---@param entry PackageEntry
@@ -9221,6 +9494,890 @@ function reaper.Fab_Get(command) end
 ---@return boolean retval
 function reaper.Fab_Map(fxId, command, paramId, control, bandsIn, stepIn, accelIn, minvalIn, maxvalIn) end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---Get current button state.
 ---@param device integer
 ---@param button integer
@@ -9250,7 +10407,7 @@ function reaper.MCULive_GetFaderValue(device, faderIdx, param) end
 ---Gets MIDI message from input buffer/queue. Gets (pops/pulls) indexed message (status, data1, data2 and frame_offset) from queue and retval is total size/length left in queue. E.g. continuously read all indiviual messages with deferred script. Frame offset resolution is 1/1024000 seconds, not audio samples. Long messages are returned as optional strings of byte characters. msgIdx -1 returns size (length) of buffer. Read also non-MCU devices by creating MCULive device with their input. 
 ---@param device integer
 ---@param msgIdx integer
----@return integer retval, integer status, integer data1, integer data2, integer frame_offset, optional string
+---@return integer retval, integer status, integer data1, integer data2, integer frame_offset, string|nil msg
 function reaper.MCULive_GetMIDIMessage(device, msgIdx) end
 
 ---Maps MCU Live device# button# to REAPER command ID. E.g. reaper.MCULive_Map(0,0x5b, 40340) maps MCU Rewind to "Track: Unsolo all tracks". Or remap button to another button if your MCU button layout doesnt play nicely with default MCULive mappings. By default range 0x00 .. 0x2d is in use. Button numbers are second column (prefixed with 0x) e.g. '90 5e' 0x5e for 'transport : play', roughly. mcu documentation: 

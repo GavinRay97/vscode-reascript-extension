@@ -46,7 +46,7 @@ end
 ---@generic U
 ---@param tbl T[]
 ---@param fn fun(a: T): U
----@return U
+---@return U[]
 table.map = function(tbl, fn)
 	local result = {}
 	for i, v in ipairs(tbl) do
@@ -90,6 +90,36 @@ table.concatenate = function(t1, t2)
 end
 
 local helpers = {}
+
+---@param a string
+---@return ReturnValueElement
+function helpers.map_FnArgsStr_to_RetValElement(a)
+	local args = a:split("%s")
+	local retval = {}
+	---if #args>2, then it includes the `optional` keyword
+	---eg. "optional boolean qnIn"
+	if #args > 2 then
+		local filtered_args = table.filter(args, function(e)
+			return e ~= "optional"
+		end)
+		retval.type = filtered_args[1]
+		retval.identifier = filtered_args[#filtered_args]
+		retval.isOptional = true
+	else
+		retval.type = args[1]
+		retval.identifier = args[2]
+	end
+	return retval
+end
+
+---@param return_val_string string
+---@return ReturnValueElement[]
+function helpers.get_retvals(return_val_string)
+	local retvals = table.map(string.split(return_val_string, ","), function(str) return str:trim() end)
+	local t = table.map(retvals, helpers.map_FnArgsStr_to_RetValElement)
+	return t
+end
+
 ---@param methodcall string
 ---@return ReturnValueElement[]
 function helpers.get_fn_arguments(methodcall)
@@ -104,27 +134,7 @@ function helpers.get_fn_arguments(methodcall)
 			function(e) return e:trim() end)
 		table.concatenate(t, u)
 	end
-	t = table.map(t,
-		---@param a string
-		---@return ReturnValueElement
-		function(a)
-			local args = a:split("%s")
-			local retval = {}
-			---if #args>2, then it includes the `optional` keyword
-			---eg. "optional boolean qnIn"
-			if #args > 2 then
-				local filtered_args = table.filter(args, function(e)
-					return e ~= "optional"
-				end)
-				retval.type = filtered_args[1]
-				retval.identifier = filtered_args[#filtered_args]
-				retval.isOptional = true
-			else
-				retval.type = args[1]
-				retval.identifier = args[2]
-			end
-			return retval
-		end)
+	t = table.map(t, helpers.map_FnArgsStr_to_RetValElement)
 	return t
 end
 

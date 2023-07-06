@@ -58,8 +58,10 @@ local function rewriteParams(parameters, decl_or_type)
 			formatted_params = formatted_params ..
 					string.format("---@param %s %s\n", rewriteLuaReservedWords(param.identifier, param.isOptional), param.type)
 		else
+			local formatted_type = param.isOptional ~= nil and param.isOptional == true and param.type .. "|nil" or param.type
 			formatted_params = formatted_params .. (formatted_params:len() > 0 and ", " or "") ..
-					string.format("%s %s", param.type, rewriteLuaReservedWords(param.identifier or ""))
+					string.format("%s %s", formatted_type,
+						rewriteLuaReservedWords(param.identifier or ""))
 		end
 	end
 	return formatted_params
@@ -110,20 +112,6 @@ local function formatDefinition(def)
 end
 
 
----map each definition into à LuaDoc string
----@param definitions ReaScriptUSDocML[]
-local function formatDefinitions(definitions)
-	---@type string[]
-	local formattedDefinitions = {}
-	for _, definition in pairs(definitions) do
-		local formattedDefinition = formatDefinition(definition)
-		if formattedDefinition ~= "" then
-			formattedDefinitions[#formattedDefinitions + 1] = formattedDefinition
-		end
-	end
-	return formattedDefinitions
-end
-
 ---@param T string[]
 local function concatenateTable(T)
 	local ret_str = ""
@@ -133,10 +121,10 @@ local function concatenateTable(T)
 	return ret_str
 end
 
----	write a  typedefinitions file from the provided table
----file starts with "---@meta"
----then for each function mentioned in the table
---- follow the pattern:
+---write a  typedefinitions file from the provided table.
+---File starts with "---@meta".
+---Then, for each function mentioned in the table,
+---follow the pattern:
 --- ```lua
 --- ---@param param param_type
 --- ---@param param2 param2_type
@@ -146,7 +134,7 @@ end
 ---@param definitions ReaScriptUSDocML[]
 local function writeLuaTypes(definitions)
 	local metaTag = "---@meta\nreaper = {}\ngfx = {}\n\n"
-	local formattedDefinitions = formatDefinitions(definitions)
+	local formattedDefinitions = table.map(definitions, formatDefinition)
 	return metaTag .. concatenateTable(formattedDefinitions)
 end
 

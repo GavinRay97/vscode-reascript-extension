@@ -161,7 +161,8 @@ local function parse_lua_method_signature(functioncall_string)
     end
 
     local return_val_string, methodcall = table.unpack(string.split(functioncall_string, "="))
-    local return_vals = string.split(return_val_string, ",")
+    ---@type string[]
+    local return_vals = table.map(string.split(return_val_string, ","), function(str) return str:trim() end)
 
     local parameters = helpers.get_fn_arguments(methodcall)
     ---@type ReturnValueElement
@@ -172,18 +173,10 @@ local function parse_lua_method_signature(functioncall_string)
             isOptional = retval.isOptional
         }
     end
-
-    -- If return_vals is a string, only a single return value
-    if #return_vals == 1 then
-        local type_name, identifier = table.unpack(string.split(return_vals[1], " "))
-        signature.return_values[#signature.return_values + 1] = { type = type_name, identifier = identifier }
-        return signature
+    local rets = helpers.get_retvals(return_val_string)
+    for _, retval in ipairs(rets) do
+        signature.return_values[#signature.return_values + 1] = retval
     end
-
-    for type_name, identifier in string.gmatch(return_val_string, type_identifier_regex) do
-        signature.return_values[#signature.return_values + 1] = { type = type_name, identifier = identifier }
-    end
-
     return signature
 end
 
