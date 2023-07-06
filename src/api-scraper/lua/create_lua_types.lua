@@ -1,16 +1,3 @@
----@generic T
----@generic U
----@param tbl T[]
----@param fn fun(a: T): U
----@return U
-table.map = function(tbl, fn)
-	local result = {}
-	for i, v in ipairs(tbl) do
-		result[i] = fn(v)
-	end
-	return result
-end
-
 ---check that the signature is a SignaturesClass
 ---and has a lua or eel property
 ---@param signature unknown
@@ -28,17 +15,23 @@ end
 ---in them, so we're just adding an undersore at the end of them
 ---so they get parsed correctly by lua
 ---@param str string
+---@param isOptional? boolean
 ---@return string
-local function rewriteLuaReservedWords(str)
+local function rewriteLuaReservedWords(str, isOptional)
+	local retval = ""
 	if str == "end" then
-		return "end_"
+		retval = "end_"
 	elseif (str == "function") then
-		return "function_"
+		retval = "function_"
 	elseif (str == "in") then
-		return "in_"
+		retval = "in_"
 	else
-		return str
+		retval = str
 	end
+	if isOptional ~= nil and isOptional == true then
+		retval = retval .. "?"
+	end
+	return retval
 end
 
 ---format ReturnValueElement's params
@@ -63,7 +56,7 @@ local function rewriteParams(parameters, decl_or_type)
 					(formatted_params:len() > 0 and ", " or "") .. rewriteLuaReservedWords(param.identifier or "")
 		elseif decl_or_type == "type" then
 			formatted_params = formatted_params ..
-					string.format("---@param %s %s\n", rewriteLuaReservedWords(param.identifier), param.type)
+					string.format("---@param %s %s\n", rewriteLuaReservedWords(param.identifier, param.isOptional), param.type)
 		else
 			formatted_params = formatted_params .. (formatted_params:len() > 0 and ", " or "") ..
 					string.format("%s %s", param.type, rewriteLuaReservedWords(param.identifier or ""))

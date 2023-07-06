@@ -255,9 +255,9 @@ function reaper.CountTracks(proj) end
 ---@param track MediaTrack
 ---@param starttime number
 ---@param endtime number
----@param boolean optional
+---@param qnIn? boolean
 ---@return MediaItem item
-function reaper.CreateNewMIDIItemInProj(track, starttime, endtime, boolean) end
+function reaper.CreateNewMIDIItemInProj(track, starttime, endtime, qnIn) end
 
 ---Create an audio accessor object for this take. Must only call from the main thread. 
 ---@param take MediaItem_Take
@@ -621,9 +621,9 @@ function reaper.DeleteTakeMarker(take, idx) end
 ---Deletes one or more stretch markers. Returns number of stretch markers deleted.
 ---@param take MediaItem_Take
 ---@param idx integer
----@param integer optional
+---@param countIn? integer
 ---@return integer count_del_stretchmarkers
-function reaper.DeleteTakeStretchMarkers(take, idx, integer) end
+function reaper.DeleteTakeStretchMarkers(take, idx, countIn) end
 
 ---Delete a tempo/time signature marker. 
 ---@param project ReaProject
@@ -699,12 +699,12 @@ function reaper.DockWindowRemove(hwnd) end
 function reaper.EditTempoTimeSigMarker(project, markerindex) end
 
 ---call with a saved window rect for your window and it'll correct any positioning info.
----@param r integer
----@param r integer
----@param r integer
----@param r integer
+---@param r.left integer
+---@param r.top integer
+---@param r.right integer
+---@param r.bot integer
 ---@return integer r, integer r, integer r, integer r
-function reaper.EnsureNotCompletelyOffscreen(r, r, r, r) end
+function reaper.EnsureNotCompletelyOffscreen(r.left, r.top, r.right, r.bot) end
 
 ---List the files in the "path" directory. Returns NULL/nil when all files have been listed. Use fileindex = -1 to force re-read of directory (invalidate cache). 
 ---@param path string
@@ -931,7 +931,7 @@ function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 ---@param numchannels integer
 ---@param starttime_sec number
 ---@param numsamplesperchannel integer
----@param samplebuffer array
+---@param samplebuffer reaper.array
 ---@return integer samples
 function reaper.GetAudioAccessorSamples(accessor, samplerate, numchannels, starttime_sec, numsamplesperchannel, samplebuffer) end
 
@@ -1264,7 +1264,7 @@ function reaper.GetMediaItemTake_Item(take) end
 ---@param numchannels integer
 ---@param numsamplesperchannel integer
 ---@param want_extra_type integer
----@param buf array
+---@param buf reaper.array
 ---@return integer peaks
 function reaper.GetMediaItemTake_Peaks(take, peakrate, starttime, numchannels, numsamplesperchannel, want_extra_type, buf) end
 
@@ -1753,11 +1753,11 @@ function reaper.GetSetProjectAuthor(proj, set, author) end
 ---Get or set the arrange view grid division. 0.25=quarter note, 1.0/3.0=half note triplet, etc. swingmode can be 1 for swing enabled, swingamt is -1..1. swingmode can be 3 for measure-grid. Returns grid configuration flags
 ---@param project ReaProject
 ---@param set boolean
----@param number optional
----@param integer optional
----@param number optional
+---@param division? number
+---@param swingmode? integer
+---@param swingamt? number
 ---@return integer retval, optional number, optional integer, optional number
-function reaper.GetSetProjectGrid(project, set, number, integer, number) end
+function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) end
 
 ---Get or set project information.
 --- 
@@ -2356,9 +2356,9 @@ function reaper.InsertAutomationItem(env, pool_id, position, length) end
 ---@param shape integer
 ---@param tension number
 ---@param selected boolean
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, boolean) end
+function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, noSortIn) end
 
 ---Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.
 ---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.
@@ -2372,9 +2372,9 @@ function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selec
 ---@param shape integer
 ---@param tension number
 ---@param selected boolean
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape, tension, selected, boolean) end
+function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape, tension, selected, noSortIn) end
 
 ---mode: 
 ---0=add to current track, 
@@ -2751,13 +2751,13 @@ function reaper.MIDI_GetScale(take) end
 ---Get MIDI meta-event properties. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event. For all other meta-messages, type is returned as -2 and msg returned as all zeroes. See MIDI_GetEvt.
 ---@param take MediaItem_Take
 ---@param textsyxevtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param string optional
+---@param selected? boolean
+---@param muted? boolean
+---@param ppqpos? number
+---@param type? integer
+---@param msg? string
 ---@return boolean retval, optional boolean, optional boolean, optional number, optional integer, optional string
-function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, boolean, boolean, number, integer, string) end
+function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, selected, muted, ppqpos, type, msg) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. See MIDI_GetHash
 ---@param track MediaTrack
@@ -2800,9 +2800,9 @@ function reaper.MIDI_InsertEvt(take, selected, muted, ppqpos, bytestr) end
 ---@param chan integer
 ---@param pitch integer
 ---@param vel integer
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_InsertNote(take, selected, muted, startppqpos, endppqpos, chan, pitch, vel, boolean) end
+function reaper.MIDI_InsertNote(take, selected, muted, startppqpos, endppqpos, chan, pitch, vel, noSortIn) end
 
 ---Insert a new MIDI text or sysex event. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event.
 ---@param take MediaItem_Take
@@ -2835,36 +2835,36 @@ function reaper.MIDI_SetAllEvts(take, buf) end
 ---Set MIDI CC event properties. Properties passed as NULL will not be set. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param ccidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param chanmsgIn? integer
+---@param chanIn? integer
+---@param msg2In? integer
+---@param msg3In? integer
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetCC(take, ccidx, boolean, boolean, number, integer, integer, integer, integer, boolean) end
+function reaper.MIDI_SetCC(take, ccidx, selectedIn, mutedIn, ppqposIn, chanmsgIn, chanIn, msg2In, msg3In, noSortIn) end
 
 ---Set CC shape and bezier tension. set noSort if setting multiple events, then call MIDI_Sort when done. See MIDI_SetCC, MIDI_GetCCShape
 ---@param take MediaItem_Take
 ---@param ccidx integer
 ---@param shape integer
 ---@param beztension number
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetCCShape(take, ccidx, shape, beztension, boolean) end
+function reaper.MIDI_SetCCShape(take, ccidx, shape, beztension, noSortIn) end
 
 ---Set MIDI event properties. Properties passed as NULL will not be set. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param evtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param string optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param msg? string
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetEvt(take, evtidx, boolean, boolean, number, string, boolean) end
+function reaper.MIDI_SetEvt(take, evtidx, selectedIn, mutedIn, ppqposIn, msg, noSortIn) end
 
 ---Set the start/end positions of a media item that contains a MIDI take.
 ---@param item MediaItem
@@ -2876,28 +2876,28 @@ function reaper.MIDI_SetItemExtents(item, startQN, endQN) end
 ---Set MIDI note properties. Properties passed as NULL (or negative values) will not be set. Set noSort if setting multiple events, then call MIDI_Sort when done. Setting multiple note start positions at once is done more safely by deleting and re-inserting the notes.
 ---@param take MediaItem_Take
 ---@param noteidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param startppqposIn? number
+---@param endppqposIn? number
+---@param chanIn? integer
+---@param pitchIn? integer
+---@param velIn? integer
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetNote(take, noteidx, boolean, boolean, number, number, integer, integer, integer, boolean) end
+function reaper.MIDI_SetNote(take, noteidx, selectedIn, mutedIn, startppqposIn, endppqposIn, chanIn, pitchIn, velIn, noSortIn) end
 
 ---Set MIDI text or sysex event properties. Properties passed as NULL will not be set. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param textsyxevtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param string optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param typeIn? integer
+---@param msg? string
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetTextSysexEvt(take, textsyxevtidx, boolean, boolean, number, integer, string, boolean) end
+function reaper.MIDI_SetTextSysexEvt(take, textsyxevtidx, selectedIn, mutedIn, ppqposIn, typeIn, msg, noSortIn) end
 
 ---Sort MIDI events after multiple calls to MIDI_SetNote, MIDI_SetCC, etc.
 ---@param take MediaItem_Take
@@ -3021,17 +3021,17 @@ function reaper.MuteAllTracks(mute) end
 
 ---With r.??? and sr.??? parameters, you can define coordinates of a rectangle. 
 ---The function will return the left/top/right/bottom coordinates of the viewport that that rectangle is on/closest to.
----@param r integer
----@param r integer
----@param r integer
----@param r integer
----@param sr integer
----@param sr integer
----@param sr integer
----@param sr integer
+---@param r.left integer
+---@param r.top integer
+---@param r.right integer
+---@param r.bot integer
+---@param sr.left integer
+---@param sr.top integer
+---@param sr.right integer
+---@param sr.bot integer
 ---@param wantWorkArea boolean
 ---@return integer left, integer top, integer right, integer bottom
-function reaper.my_getViewport(r, r, r, r, sr, sr, sr, sr, wantWorkArea) end
+function reaper.my_getViewport(r.left, r.top, r.right, r.bot, sr.left, sr.top, sr.right, sr.bot, wantWorkArea) end
 
 ---Get the command ID number for named command that was registered by an extension such as "\_SWS\_ABOUT" or "\_113088d11ae641c193a2b7ede3041ad5" for a ReaScript or a custom action.see [Main\_OnCommand](#Main_OnCommand) for executing actions with command-ID-numbers.Note: never assume that this command-id is valid across multiple installations. That means, the command-id returned by NamedCommandLookup can be different for the same \_ActionCommandID between different Reaper-installations.
 ---So when you want to run a command, using the command-id, ALWAYS get it using NamedCommandLookup in your script first, and never store it somewhere to be used later on.
@@ -3258,7 +3258,7 @@ function reaper.PCM_Source_Destroy(src) end
 ---@param numchannels integer
 ---@param numsamplesperchannel integer
 ---@param want_extra_type integer
----@param buf array
+---@param buf reaper.array
 ---@return integer retval
 function reaper.PCM_Source_GetPeaks(src, peakrate, starttime, numchannels, numsamplesperchannel, want_extra_type, buf) end
 
@@ -3360,9 +3360,9 @@ function reaper.resolve_fn(in_, out) end
 ---Resolves a filename "in" by using project settings etc. If no file found, out will be a copy of in.
 ---@param in_ string
 ---@param out string
----@param string optional
+---@param checkSubDir? string
 ---@return string out
-function reaper.resolve_fn2(in_, out, string) end
+function reaper.resolve_fn2(in_, out, checkSubDir) end
 
 ---Get the named command for the given command ID. The returned string will not start with '_' (e.g. it will return "SWS_ABOUT"), it will be NULL if command_id is a native action.
 ---@param command_id integer
@@ -3432,14 +3432,14 @@ function reaper.SetEditCurPos2(proj, time, moveview, seekplay) end
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done. See [SetEnvelopePointEx](#SetEnvelopePointEx).
 ---@param envelope TrackEnvelope
 ---@param ptidx integer
----@param number optional
----@param number optional
----@param integer optional
----@param number optional
----@param boolean optional
----@param boolean optional
+---@param timeIn? number
+---@param valueIn? number
+---@param shapeIn? integer
+---@param tensionIn? number
+---@param selectedIn? boolean
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.SetEnvelopePoint(envelope, ptidx, number, number, integer, number, boolean, boolean) end
+function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.
 ---autoitem\_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.
@@ -3450,14 +3450,14 @@ function reaper.SetEnvelopePoint(envelope, ptidx, number, number, integer, numbe
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param ptidx integer
----@param number optional
----@param number optional
----@param integer optional
----@param number optional
----@param boolean optional
----@param boolean optional
+---@param timeIn? number
+---@param valueIn? number
+---@param shapeIn? integer
+---@param tensionIn? number
+---@param selectedIn? boolean
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, number, number, integer, number, boolean, boolean) end
+function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Sets the RPPXML state of an envelope, returns true if successful. 
 ---@param env TrackEnvelope
@@ -3869,18 +3869,18 @@ function reaper.SetRegionRenderMatrix(proj, regionindex, track, addorremove) end
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param nameIn string
----@param number optional
----@param integer optional
+---@param srcposIn? number
+---@param colorIn? integer
 ---@return integer index
-function reaper.SetTakeMarker(take, idx, nameIn, number, integer) end
+function reaper.SetTakeMarker(take, idx, nameIn, srcposIn, colorIn) end
 
 ---Adds or updates a stretch marker. If idx>0, stretch marker will be added. If idx>=0, stretch marker will be updated. When adding, if srcposInOptional is omitted, source position will be auto-calculated. When updating a stretch marker, if srcposInOptional is omitted, srcpos will not be modified. Position/srcposition values will be constrained to nearby stretch markers. Returns index of stretch marker, or -1 if did not insert (or marker already existed at time).
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param pos number
----@param number optional
+---@param srcposIn? number
 ---@return integer retval
-function reaper.SetTakeStretchMarker(take, idx, pos, number) end
+function reaper.SetTakeStretchMarker(take, idx, pos, srcposIn) end
 
 ---Set take stretch marker slope
 ---@param take MediaItem_Take
@@ -4823,9 +4823,9 @@ function reaper.time_precise() end
 ---convert a beat position (or optionally a beats+measures if measures is non-NULL) to time.
 ---@param proj ReaProject
 ---@param tpos number
----@param integer optional
+---@param measuresIn? integer
 ---@return number retval
-function reaper.TimeMap2_beatsToTime(proj, tpos, integer) end
+function reaper.TimeMap2_beatsToTime(proj, tpos, measuresIn) end
 
 ---get the effective BPM at the time (seconds) position (i.e. 2x in /8 signatures)
 ---@param proj ReaProject
@@ -6440,9 +6440,9 @@ function reaper.SNM_GetSetSourceState(item, takeidx, state, setnewvalue) end
 function reaper.SNM_GetSetSourceState2(take, state, setnewvalue) end
 
 ---[S&M] Deprecated, see [GetMediaSourceType](#GetMediaSourceType). Gets the source type of a take. Returns false if failed (e.g. take with empty source, etc..)
----@param takeWDL_FastString MediaItem_Take
+---@param type? MediaItem_Take
 ---@return boolean retval
-function reaper.SNM_GetSourceType(takeWDL_FastString) end
+function reaper.SNM_GetSourceType(type) end
 
 ---[S&M] Deprecated, see TakeFX_/TrackFX_ CopyToTrack/Take, TrackFX/TakeFX _Delete (v5.95pre2+). Move or removes a track FX. Returns true if tr has been updated.
 ---fxId: fx index in chain or -1 for the selected fx. what: 0 to remove, -1 to move fx up in chain, 1 to move fx down in chain.
@@ -6590,9 +6590,9 @@ function reaper.JS_Byte(pointer, offset) end
 ---@param srcy integer
 ---@param srcw integer
 ---@param srch integer
----@param boolean optional
+---@param autoUpdate? boolean
 ---@return integer retval
-function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx, srcy, srcw, srch, boolean) end
+function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx, srcy, srcw, srch, autoUpdate) end
 
 ---On WindowsOS, flickering of composited images can be improved considerably by slowing the refresh rate of the window. The optimal refresh rate may depend on the number of composited bitmaps.minTime is the minimum refresh delay, in seconds, when only one bitmap is composited onto the window. The delay time will increase linearly with the number of bitmaps, up to a maximum of maxTime when numBitmapsWhenMax is reached.If both minTime and maxTime are 0, all delay settings for the window are cleared.Returns:
 ---* retval = 1 if successful, 0 if arguments are invalid (i.e. if maxTime < minTime, or maxBitmaps < 1).
@@ -7238,9 +7238,9 @@ function reaper.JS_Mouse_LoadCursor(cursorNumber) end
 ---* If true, the file will be re-loaded and a new handle will be returned.
 ---* WARNING: Each time that a cursor file is re-loaded, the number of GDI objects increases for the entire duration of the REAPER session.If successful, returns a handle to the cursor, which can be used in JS_Mouse_SetCursor.
 ---@param pathAndFileName string
----@param boolean optional
+---@param forceNewLoad? boolean
 ---@return identifier mouse_cursor
-function reaper.JS_Mouse_LoadCursorFromFile(pathAndFileName, boolean) end
+function reaper.JS_Mouse_LoadCursorFromFile(pathAndFileName, forceNewLoad) end
 
 ---Sets the mouse cursor.  (Only lasts while script is running, and for a single "defer" cycle.)
 ---
@@ -7438,10 +7438,10 @@ function reaper.JS_Window_ClientToScreen(windowHWND, x, y) end
 ---@param y integer
 ---@param w integer
 ---@param h integer
----@param string optional
+---@param style? string
 ---@param ownerHWND identifier
 ---@return identifier retval, optional string
-function reaper.JS_Window_Create(title, className, x, y, w, h, string, ownerHWND) end
+function reaper.JS_Window_Create(title, className, x, y, w, h, style, ownerHWND) end
 
 ---Destroys the specified window.
 ---
@@ -7742,10 +7742,10 @@ function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 ---@param top integer
 ---@param width integer
 ---@param height integer
----@param string optional
----@param string optional
+---@param ZOrder? string
+---@param flags? string
 ---@return boolean retval, optional string, optional string
-function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, string, string) end
+function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, ZOrder, flags) end
 
 ---Parameters:* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.           NOTE: API functions can scroll REAPER's windows, but cannot zoom them.  Instead, use actions such as "View: Zoom to one loop iteration".
 ---
@@ -8019,9 +8019,9 @@ function reaper.Xen_GetMediaSourceSamples(src, destbuf, destbufoffset, numframes
 ---@param source PCM_source
 ---@param gain number
 ---@param loop boolean
----@param integer optional
+---@param outputchanindexIn? integer
 ---@return integer retval
-function reaper.Xen_StartSourcePreview(source, gain, loop, integer) end
+function reaper.Xen_StartSourcePreview(source, gain, loop, outputchanindexIn) end
 
 ---Stop audio preview. To stop all running previews, set id=-1
 ---@param preview_id integer
@@ -8515,12 +8515,12 @@ function reaper.CF_ShellExecute(file) end
 ---
 ---@param item MediaItem
 ---@param windowSize number
----@param reaper identifier
----@param reaper identifier
----@param reaper identifier
----@param reaper identifier
+---@param reaper.array_peaks identifier
+---@param reaper.array_peakpositions identifier
+---@param reaper.array_RMSs identifier
+---@param reaper.array_RMSpositions identifier
 ---@return boolean retval
-function reaper.NF_AnalyzeMediaItemPeakAndRMS(item, windowSize, reaper, reaper, reaper, reaper) end
+function reaper.NF_AnalyzeMediaItemPeakAndRMS(item, windowSize, reaper.array_peaks, reaper.array_peakpositions, reaper.array_RMSs, reaper.array_RMSpositions) end
 
 ---See [NF\_GetMediaItemMaxPeak](#NF_GetMediaItemMaxPeak), additionally returns maxPeakPos (relative to item position).
 ---
@@ -8642,20 +8642,23 @@ function gfx.arc(x, y, r, ang1, ang2, number) end
 ---@param source integer
 ---@param scale number
 ---@param rotation number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
+---@param srcx? number
+---@param srcy? number
+---@param srcw? number
+---@param srch? number
+---@param destx? integer
+---@param desty? integer
+---@param destw? integer
+---@param desth? integer
+---@param rotxoffs? integer
+---@param rotyoffs? integer
 ---@return integer source
-function gfx.blit(source, scale, rotation, number, number, number, number, integer, integer, integer, integer, integer, integer) end
+function gfx.blit(source, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs) end
 
 ---Deprecated, use gfx.blit instead.Note: the naming of the function might be misleading, as it has nothing to do with blitting of text, but rather is called Blit Ext.
+---@param nil source
+---@param nil coordinatelist
+---@param nil rotation
 ---@return number retval
 function gfx.blitext() end
 
@@ -8694,9 +8697,9 @@ function gfx.clienttoscreen(x, y) end
 ---@param dtdy number
 ---@param dsdxdy number
 ---@param dtdxdy number
----@param integer optional
+---@param usecliprect? integer
 ---@return number retval
-function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, desth, dsdx, dtdx, dsdy, dtdy, dsdxdy, dtdxdy, integer) end
+function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, desth, dsdx, dtdx, dsdy, dtdy, dsdxdy, dtdxdy, usecliprect) end
 
 ---Queries or sets the docking-state of the gfx.init()-window.
 ---Call with v=-1 to query docked state, otherwise v>=0 to set docked state. 
@@ -8704,12 +8707,12 @@ function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, dest
 ---So the first queried/set docker can be top-left-docker or the top docker or even one of the bottom dockers.
 ---The order doesn't seem to make any sense. Especially with more than 16 windows docked in the current screenset.
 ---@param v integer
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
+---@param wx? integer
+---@param wy? integer
+---@param ww? integer
+---@param wh? integer
 ---@return number querystate, optional integer, optional integer, optional integer, optional integer
-function gfx.dock(v, integer, integer, integer, integer) end
+function gfx.dock(v, wx, wy, ww, wh) end
 
 ---Draws the character (can be a numeric ASCII code as well), to gfx.x, gfx.y, and moves gfx.x over by the size of the character.
 ---@param char integer
@@ -8742,10 +8745,10 @@ function gfx.drawstr(str, integer, integer, integer) end
 ---- use 65536 as parameter charactercode to query special flags, returns: &1 (supported in this script), &2=window has focus, &4=window is visible  If the user typed in multiple characters, the character queue will hold them. So calling gfx.getchar multiple times, until it returns 0 or -1 will give you all typed keys.Typed characters between 256 and 1024(maybe higher?) seem to hint at multibyte-unicode characters. 
 ---That means, you need to take the next character-value in the character-queue into consideration as well to get the current unicode-character!If unichar is specified, it will be set to the unicode value of the key if available (and the return value may be the unicode value or a raw key value as described above, depending). If unichar is not specified, unicode codepoints greater than 255 will be returned as 'u'<<24 + valueNote that calling gfx.getchar() at least once causes gfx.mouse_cap to reflect keyboard modifiers even when the mouse is not captured.
 ---
----@param integer optional
----@param integer optional
+---@param character? integer
+---@param unicode_char? integer
 ---@return integer charactercode
-function gfx.getchar(integer, integer) end
+function gfx.getchar(character, unicode_char) end
 
 ---Returns filenames, drag'n'dropped into a window created by gfx.init().
 ---Use idx to get a specific filename, that has been dropped into the gfx.init()-window.When returned filename starts with @fx: it is an fx dropped.
@@ -8789,13 +8792,14 @@ function gfx.getpixel() end
 function gfx.gradrect(x, y, w, h, r, g, b, a, number, number, number, number, number, number, number, number) end
 
 ---Initializes the graphics window with title name. Suggested width and height can be specified.Once the graphics window is open, gfx.update() should be called periodically. Only one graphics-window can be opened per script! Calling gfx.ini after a window has been opened has no effect.To resize/reposition the window, call gfx.init again and pass an empty string as name-parameter.To retitle the window, run gfx.init again with the new title as parameter name.To get the current window-states, dimensions, etc, you can use gfx.dock).
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
+---@param "name" string
+---@param width? integer
+---@param height? integer
+---@param dockstate? integer
+---@param xpos? integer
+---@param ypos? integer
 ---@return integer retval
-function gfx.init(integer, integer, integer, integer, integer) end
+function gfx.init("name", width, height, dockstate, xpos, ypos) end
 
 ---Draws a line from x,y to x2,y2, and if aa is not specified or 0.5 or greater, it will be antialiased. 
 ---@param x integer
@@ -8835,13 +8839,13 @@ function gfx.measurestr(str) end
 ---@param mul_r number
 ---@param mul_g number
 ---@param mul_b number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
+---@param mul_a? number
+---@param add_r? number
+---@param add_g? number
+---@param add_b? number
+---@param add_a? number
 ---@return integer retval
-function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, number, number, number, number, number) end
+function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, mul_a, add_r, add_g, add_b, add_a) end
 
 ---Formats and draws a string at gfx.x, gfx.y, and updates gfx.x/gfx.y accordingly (the latter only if the formatted string contains newline). For more information on format strings, see sprintf()    * %% = %
 ---    * %s = string from parameter
@@ -8862,9 +8866,10 @@ function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, number, number, number,
 ---    * %.4f = floating point, minimum of 4 digits after decimal point
 ---    * %10d = integer, minimum of 10 digits (space padded)
 ---    * %010f = integer, minimum of 10 digits (zero padded)Values for format specifiers can be specified as additional parameters to gfx.printf, or within {} in the format specifier (such as %{varname}d, in that case a global variable is always used).
----@param format string
+---@param format[ string
+---@param ...] various
 ---@return number retval
-function gfx.printf(format) end
+function gfx.printf(format[, ...]) end
 
 ---Closes the graphics window.
 ---@return integer retval
@@ -8875,9 +8880,9 @@ function gfx.quit() end
 ---@param y integer
 ---@param w integer
 ---@param h integer
----@param integer optional
+---@param filled? integer
 ---@return integer retval
-function gfx.rect(x, y, w, h, integer) end
+function gfx.rect(x, y, w, h, filled) end
 
 ---Fills a rectangle from gfx.x,gfx.y to x,y. Updates gfx.x,gfx.y to x,y. 
 ---@param x integer
@@ -8891,9 +8896,9 @@ function gfx.rectto(x, y) end
 ---@param w integer
 ---@param h integer
 ---@param radius number
----@param integer optional
+---@param antialias? integer
 ---@return integer retval
-function gfx.roundrect(x, y, w, h, radius, integer) end
+function gfx.roundrect(x, y, w, h, radius, antialias) end
 
 ---Converts the screen coordinates x,y to client coordinates, returns those values.
 ---@param x integer
@@ -8905,13 +8910,13 @@ function gfx.screentoclient(x, y) end
 ---If sets the corresponding gfx-variables.
 ---Sets gfx.r/gfx.g/gfx.b/gfx.a2/gfx.mode sets gfx.dest if final parameter specified
 ---@param r number
----@param number optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
+---@param g? number
+---@param b? number
+---@param a2? number
+---@param mode? integer
+---@param dest? integer
 ---@return integer retval
-function gfx.set(r, number, number, number, integer, integer) end
+function gfx.set(r, g, b, a2, mode, dest) end
 
 ---Sets the mouse cursor. resource_id is a value like 32512 (for an arrow cursor), custom_cursor_name is a string like "arrow" (for the REAPER custom arrow cursor). resource_id must be nonzero, but custom_cursor_name is optional.examples for resource_id:
 ---    101, enter text
@@ -8932,10 +8937,10 @@ function gfx.set(r, number, number, number, integer, integer) end
 ---    116, arrow with cd
 ---    
 ---works only with gfx-window opened.
----@param integer optional
----@param string optional
+---@param resource_id? integer
+---@param custom_cursor_name? string
 ---@return number retval
-function gfx.setcursor(integer, string) end
+function gfx.setcursor(resource_id, custom_cursor_name) end
 
 ---Can select a font and optionally configure it. After calling gfx_setfont(), gfx_texth may be updated to reflect the new average line height.
 ---@param idx integer
@@ -9013,10 +9018,10 @@ function reaper.gmem_write(index, value) end
 function gfx.update() end
 
 ---Creates a new reaper.array object of maximum and initial size size, if specified, or from the size/values of a table/array. Both size and table/array can be specified, the size parameter will override the table/array size.
----@param values array
----@param size integer
+---@param values] [table|array
+---@param size] [integer
 ---@return ReaperArray reaper_array
-function reaper.new_array(values, size) end
+function reaper.new_array(values], size]) end
 
 ---Adds code to be called back by REAPER. Used to create persistent ReaScripts that continue to run and respond to input, while the user does other tasks. Identical to defer().Note that no undo point will be automatically created when the script finishes, unless you create it explicitly.
 ---@param function_ function
@@ -9024,76 +9029,78 @@ function reaper.new_array(values, size) end
 function reaper.runloop(function_) end
 
 ---Sets the value of zero or more items in the array. If value not specified, 0.0 is used. offset is 1-based, if size omitted then the maximum amount available will be set.
----@param value string
+---@param value [number|string
 ---@param offset integer
----@param size integer
+---@param size] integer
 ---@return boolean retval
-function {reaper.array}.clear(value, offset, size) end
+function {reaper.array}.clear(value, offset, size]) end
 
 ---Convolves complex value pairs from reaper.array, starting at 1-based srcoffs, reading/writing to 1-based destoffs. size is in normal items (so it must be even)
----@param src array
+---@param src [reaper.array
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs integer
+---@param destoffs] integer
 ---@return integer retval
-function {reaper.array}.convolve(src, srcoffs, size, destoffs) end
+function {reaper.array}.convolve(src, srcoffs, size, destoffs]) end
 
 ---Copies values from reaper.array or table, starting at 1-based srcoffs, writing to 1-based destoffs.
----@param src array
+---@param src [reaper.array
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs integer
+---@param destoffs] integer
 ---@return integer retval
-function {reaper.array}.copy(src, srcoffs, size, destoffs) end
+function {reaper.array}.copy(src, srcoffs, size, destoffs]) end
 
 ---Performs a forward FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled following the FFT to be in normal order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.fft(size, permute, offset) end
+function {reaper.array}.fft(size[, permute, offset]) end
 
 ---Performs a forward real->complex FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled following the FFT to be in normal order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.fft_real(size, permute, offset) end
+function {reaper.array}.fft_real(size[, permute, offset]) end
 
 ---Returns the maximum (allocated) size of the array.
 ---@return integer size
 function {reaper.array}.get_alloc() end
 
 ---Performs a backwards FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled before the IFFT to be in fft-order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.ifft(size, permute, offset) end
+function {reaper.array}.ifft(size[, permute, offset]) end
 
 ---Performs a backwards complex->real FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled before the IFFT to be in fft-order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.ifft_real(size, permute, offset) end
+function {reaper.array}.ifft_real(size[, permute, offset]) end
 
 ---Multiplies values from reaper.array, starting at 1-based srcoffs, reading/writing to 1-based destoffs.
+---@param src [{reaper.array}
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs number
+---@param destoffs] number
 ---@return integer retvals
-function {reaper.array}.multiply(srcoffs, size, destoffs) end
+function {reaper.array}.multiply(src, srcoffs, size, destoffs]) end
 
 ---Resizes an array object to size. size must be [0..max_size].
+---@param nil size
 ---@return boolean retval
 function {reaper.array}.resize() end
 
 ---Returns a new table with values from items in the array. Offset is 1-based and if size is omitted all available values are used.
----@param offset integer
----@param size integer
+---@param offset [integer
+---@param size] integer
 ---@return table new_table
-function {reaper.array}.table(offset, size) end
+function {reaper.array}.table(offset, size]) end
 
 ---Show the about dialog of the given package entry.
 ---The repository index is downloaded asynchronously if the cached copy doesn't exist or is older than one week.see ReaPack_GetOwner to get this parameter
@@ -9174,9 +9181,9 @@ function reaper.osara_outputMessage(message) end
 function reaper.RDNA_GetMediaSourceMetadata(src, metaType, key, buf, bufSize) end
 
 ---Clears ReaFab control map, optionally based on matching idString. Returns true on success.
----@param string optional
+---@param idStringIn? string
 ---@return boolean retval
-function reaper.Fab_Clear(string) end
+function reaper.Fab_Clear(idStringIn) end
 
 ---Runs ReaFab actions/commands. First parameter (command) is ReaFab command number, e.g. 3 for 3rd encoder rotation. Second parameter (val) is MIDI CC Relative value. Value 1 is increment of 1, 127 is decrement of 1. 2 is inc 2, 126 is dec 2 and so on. For button press (commands 9-32) a value of 127 is recommended.
 ---@param command integer
@@ -9206,13 +9213,13 @@ function reaper.Fab_Get(command) end
 ---@param command integer
 ---@param paramId string
 ---@param control integer
----@param integer optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
+---@param bandsIn? integer
+---@param stepIn? number
+---@param accelIn? number
+---@param minvalIn? number
+---@param maxvalIn? number
 ---@return boolean retval
-function reaper.Fab_Map(fxId, command, paramId, control, integer, number, number, number, number) end
+function reaper.Fab_Map(fxId, command, paramId, control, bandsIn, stepIn, accelIn, minvalIn, maxvalIn) end
 
 ---Get current button state.
 ---@param device integer
@@ -9334,9 +9341,9 @@ function reaper.MCULive_GetMIDIMessage(device, msgIdx) end
 ---
 ---@param device integer
 ---@param button integer
----@param command_id integer
+---@param bool? integer
 ---@return integer retval
-function reaper.MCULive_Map(device, button, command_id) end
+function reaper.MCULive_Map(device, button, bool) end
 
 ---Reset device. device &lt; 0 resets all and returns number of devices.
 ---@param device integer
@@ -9348,9 +9355,9 @@ function reaper.MCULive_Reset(device) end
 ---@param status integer
 ---@param data1 integer
 ---@param data2 integer
----@param string optional
+---@param msgIn? string
 ---@return integer retval
-function reaper.MCULive_SendMIDIMessage(device, status, data1, data2, string) end
+function reaper.MCULive_SendMIDIMessage(device, status, data1, data2, msgIn) end
 
 ---Set button as MIDI passthrough.
 ---@param device integer

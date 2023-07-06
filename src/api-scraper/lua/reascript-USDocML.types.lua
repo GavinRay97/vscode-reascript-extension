@@ -109,6 +109,7 @@ local ProgLang = {
 ---@class ReturnValueElement
 ---@field type string
 ---@field identifier string | nil
+---@field isOptional? boolean
 
 ---@enum SourceDocument
 local SourceDocument = {

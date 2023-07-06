@@ -3,64 +3,9 @@
 local ultraschall = require("ultraschall_doc_engine")
 local json = require("json")
 local pretty_print = require("pprint")
+local helpers = require("helpers")
 
 local parser = {}
-
----------------------
--- HELPERS
----------------------
-
----@generic T
----@generic U
----@param list T[]
----@param fn fun(acc: U, curVal: T): U
----@param init U?
----@return U
-table.reduce = function(list, fn, init)
-    local acc = init
-    for k, v in ipairs(list) do
-        if 1 == k and not init then
-            acc = v
-        else
-            acc = fn(acc, v)
-        end
-    end
-    return acc
-end
-
----@generic T
----@param predicate fun(a: T): boolean
----@param t T[]
----@return T | nil
-function table.find(t, predicate)
-    for i, v in ipairs(t) do
-        if predicate(v) then
-            return v
-        end
-    end
-    return nil
-end
-
-table.filter = function(t, filterIter)
-    local out = {}
-
-    for k, v in pairs(t) do
-        if filterIter(v, k, t) then
-            table.insert(out, v)
-        end
-    end
-
-    return out
-end
-
-local function split(str, sep)
-    local result = {}
-    local regex = ("([^%s]+)"):format(sep)
-    for each in str:gmatch(regex) do
-        table.insert(result, each)
-    end
-    return result
-end
 
 local function parse_params_or_retvals(items)
     local results = {}
@@ -153,7 +98,7 @@ local function parse_eel_method_signature(functioncall_string)
     local declaration = string.sub(functioncall_string, 0, lparen_idx - 1)
     local argument_string = string.sub(functioncall_string, lparen_idx + 1, rparen_idx - 1)
 
-    local return_type, method_name = table.unpack(split(declaration, " "))
+    local return_type, method_name = table.unpack(string.split(declaration, " "))
 
     local signature = {
         method_name = method_name,
@@ -163,9 +108,9 @@ local function parse_eel_method_signature(functioncall_string)
         }
     }
 
-    local arguments = split(argument_string, ",")
+    local arguments = string.split(argument_string, ",")
     for _, arg in ipairs(arguments) do
-        local params = split(arg, " ")
+        local params = string.split(arg, " ")
         if #params == 1 then
             signature.parameters[#signature.parameters + 1] = {
                 identifier = params[1] -- "starttime"
@@ -215,17 +160,22 @@ local function parse_lua_method_signature(functioncall_string)
         return signature
     end
 
-    local return_val_string, methodcall = table.unpack(split(functioncall_string, "="))
-    local return_vals = split(return_val_string, ",")
+    local return_val_string, methodcall = table.unpack(string.split(functioncall_string, "="))
+    local return_vals = string.split(return_val_string, ",")
 
-    local parameters = string.gmatch(methodcall, type_identifier_regex)
-    for type_name, identifier in parameters do
-        signature.parameters[#signature.parameters + 1] = { type = type_name, identifier = identifier }
+    local parameters = helpers.get_fn_arguments(methodcall)
+    ---@type ReturnValueElement
+    for _, retval in ipairs(parameters) do
+        signature.parameters[#signature.parameters + 1] = {
+            type = retval.type,
+            identifier = retval.identifier,
+            isOptional = retval.isOptional
+        }
     end
 
     -- If return_vals is a string, only a single return value
     if #return_vals == 1 then
-        local type_name, identifier = table.unpack(split(return_vals[1], " "))
+        local type_name, identifier = table.unpack(string.split(return_vals[1], " "))
         signature.return_values[#signature.return_values + 1] = { type = type_name, identifier = identifier }
         return signature
     end
@@ -243,8 +193,10 @@ end
 
 local function process_USDocML_text(filepath)
     local docfile = io.open(filepath, "r")
+    if docfile == nil then return end
     local doctext = docfile:read("*a")
     local _, docblocks = ultraschall.Docs_GetAllUSDocBlocsFromString(doctext)
+    if docblocks == nil then return end
 
     local results = {}
     for idx, entry in ipairs(docblocks) do
@@ -327,10 +279,12 @@ function parser.parse()
 end
 
 function parser.writeJSON()
-    local reascript_core_api = parse()
+    local reascript_core_api = parser.parse()
     local outfile = io.open("results.json", "w")
-    outfile:write(json.encode(reascript_core_api))
-    outfile:close()
+    if outfile ~= nil then
+        outfile:write(json.encode(reascript_core_api))
+        outfile:close()
+    end
 
     print("Finished!")
 end
