@@ -10,6 +10,37 @@ local parser = {}
 -- HELPERS
 ---------------------
 
+---@generic T
+---@generic U
+---@param list T[]
+---@param fn fun(acc: U, curVal: T): U
+---@param init U?
+---@return U
+table.reduce = function(list, fn, init)
+    local acc = init
+    for k, v in ipairs(list) do
+        if 1 == k and not init then
+            acc = v
+        else
+            acc = fn(acc, v)
+        end
+    end
+    return acc
+end
+
+---@generic T
+---@param predicate fun(a: T): boolean
+---@param t T[]
+---@return T | nil
+function table.find(t, predicate)
+    for i, v in ipairs(t) do
+        if predicate(v) then
+            return v
+        end
+    end
+    return nil
+end
+
 table.filter = function(t, filterIter)
     local out = {}
 

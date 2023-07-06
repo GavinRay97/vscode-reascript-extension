@@ -1,3 +1,16 @@
+---@generic T
+---@generic U
+---@param tbl T[]
+---@param fn fun(a: T): U
+---@return U
+table.map = function(tbl, fn)
+	local result = {}
+	for i, v in ipairs(tbl) do
+		result[i] = fn(v)
+	end
+	return result
+end
+
 ---check that the signature is a SignaturesClass
 ---and has a lua or eel property
 ---@param signature unknown
@@ -74,10 +87,16 @@ local function formatLuaFunctionCall(fncall)
 	return fncall:reverse():gsub("%)[^%(]*%(", ""):gsub(" .*$", ""):reverse()
 end
 
+---@param functioncall Functioncall
+---@return boolean
+local function isNotImGui(functioncall)
+	return functioncall.lua:match("ImGui") == nil
+end
+
 ---@param def ReaScriptUSDocML
 ---@return string
 local function formatDefinition(def)
-	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) then
+	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) and isNotImGui(def.functioncall) then
 		local parameters = def.signatures.lua.parameters
 		local return_values = def.signatures.lua.return_values
 
