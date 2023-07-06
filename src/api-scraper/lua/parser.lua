@@ -153,26 +153,30 @@ local function parse_lua_method_signature(functioncall_string)
     -- Process function parameters
     -- Void method call, like "reaper.adjustZoom(...)" with no return values
     if not string.find(functioncall_string, "=") then
-        local parameters = string.gmatch(functioncall_string, type_identifier_regex)
-        for type_name, identifier in parameters do
-            signature.parameters[#signature.parameters + 1] = { type = type_name, identifier = identifier }
+        local p = helpers.get_fn_arguments(functioncall_string)
+        -- get substring before function signature
+        for _, retval in ipairs(p) do
+            signature.parameters[#signature.parameters + 1] = retval
+        end
+        local retval_string = functioncall_string:reverse():gsub("%)[^%(]*%(", ""):gsub("[^%s]* ", ""):reverse():trim()
+        if not retval_string == method_name then
+            local r = helpers.get_retvals(retval_string)
+            for _, retval in ipairs(r) do
+                signature.return_values[#signature.return_values + 1] = retval
+            end
         end
         return signature
     end
 
     local return_val_string, methodcall = table.unpack(string.split(functioncall_string, "="))
     ---@type string[]
-    local return_vals = table.map(string.split(return_val_string, ","), function(str) return str:trim() end)
 
     local parameters = helpers.get_fn_arguments(methodcall)
     ---@type ReturnValueElement
     for _, retval in ipairs(parameters) do
-        signature.parameters[#signature.parameters + 1] = {
-            type = retval.type,
-            identifier = retval.identifier,
-            isOptional = retval.isOptional
-        }
+        signature.parameters[#signature.parameters + 1] = retval
     end
+
     local rets = helpers.get_retvals(return_val_string)
     for _, retval in ipairs(rets) do
         signature.return_values[#signature.return_values + 1] = retval

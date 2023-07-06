@@ -3080,8 +3080,8 @@ function reaper.OpenMediaExplorer(mediafn, play) end
 ---Send an OSC message directly to REAPER. The value argument may be NULL. The message will be matched against the default OSC patterns.This is not broadcast outside of Reaper, so you can't control devices, plugins, etc with it!Messages sent via this function can be used for parameter-learn/modulation and as shortcuts for scripts.
 ---The parameter valueIn can be retrieved with the returnvalue val of the function reaper.get_action_context, so sending values to a script is possible that way.
 ---@param message string
----@param number optional
-function reaper.OscLocalMessageToHost(message, number) end
+---@param valueIn? number
+function reaper.OscLocalMessageToHost(message, valueIn) end
 
 ---Parse hh:mm:ss.sss time string, return time in seconds (or 0.0 on error). See [parse\_timestr_pos](#parse_timestr_pos), [parse\_timestr_len](#parse_timestr_len).
 ---@param buf string
@@ -4429,16 +4429,16 @@ function reaper.SetTrackUIWidth(track, width, relative, done, igngroupflags) end
 ---@param name string
 ---@param x integer
 ---@param y integer
----@param HWND optional
+---@param hwndParent? HWND
 ---@param ctx identifier
 ---@param ctx2 integer
 ---@param ctx3 integer
-function reaper.ShowPopupMenu(name, x, y, HWND, ctx, ctx2, ctx3) end
+function reaper.ShowPopupMenu(name, x, y, hwndParent, ctx, ctx2, ctx3) end
 
 ---shows the action-list
 ---@param section KbdSectionInfo
----@param HWND optional
-function reaper.ShowActionList(section, HWND) end
+---@param callerWnd? HWND
+function reaper.ShowActionList(section, callerWnd) end
 
 ---Show a message to the user (also useful for debugging). Send "\n" for newline, "" to clear the console.
 ---@param msg string
@@ -5278,13 +5278,12 @@ function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 ---Bandidx: (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
 ---See [TrackFX\_GetEQ](#TrackFX_GetEQ), [TrackFX\_GetEQParam](#TrackFX_GetEQParam), [TrackFX\_SetEQParam](#TrackFX_SetEQParam), [TrackFX\_GetEQBandEnabled](#TrackFX_GetEQBandEnabled).By setting fx you can add 0x1000000 set to reference input FX. 
 ---To use global monitoring inputFX, use the master-track, any other track will access the track's rec-input-fx.
----@param reaper boolean
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param bandtype integer
 ---@param bandidx integer
 ---@param enable boolean
-function reaper.TrackFX_SetEQBandEnabled(reaper, track, fxidx, bandtype, bandidx, enable) end
+function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable) end
 
 ---Returns false if track/fxidx is not ReaEQ. Targets a band matching bandtype.
 ---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.
@@ -5683,8 +5682,8 @@ function reaper.BR_EnvSetPoint(envelope, id, position, value, shape, selected, b
 ---@param laneHeight integer
 ---@param defaultShape integer
 ---@param faderScaling boolean
----@param integer optional
-function reaper.BR_EnvSetProperties(envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling, integer) end
+---@param automationItemsOptionsIn? integer
+function reaper.BR_EnvSetProperties(envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling, automationItemsOptionsIn) end
 
 ---[BR] Sort envelope points by position. The only reason to call this is if sorted points are explicitly needed after editing them with BR_EnvSetPoint. Note that you do not have to call this before doing BR_EnvFree since it does handle unsorted points too.
 ---@param envelope BR_Envelope
@@ -6637,8 +6636,8 @@ function reaper.JS_File_Stat(filePath) end
 ---@param srxy integer
 ---@param width integer
 ---@param height integer
----@param string optional
-function reaper.JS_GDI_Blit(destHDC, dstx, dsty, sourceHDC, srcx, srxy, width, height, string) end
+---@param mode? string
+function reaper.JS_GDI_Blit(destHDC, dstx, dsty, sourceHDC, srcx, srxy, width, height, mode) end
 
 ---@param color integer
 ---@return identifier font
@@ -6789,8 +6788,8 @@ function reaper.JS_GDI_SetTextColor(deviceHDC, color) end
 ---@param srxy integer
 ---@param srcw integer
 ---@param srch integer
----@param string optional
-function reaper.JS_GDI_StretchBlit(destHDC, dstx, dsty, dstw, dsth, sourceHDC, srcx, srxy, srcw, srch, string) end
+---@param mode? string
+function reaper.JS_GDI_StretchBlit(destHDC, dstx, dsty, dstw, dsth, sourceHDC, srcx, srxy, srcw, srch, mode) end
 
 ---returns the number of item of the listview
 ---@param headerHWND identifier
@@ -7161,19 +7160,17 @@ function reaper.JS_LICE_SetFontFromGDI(LICEFont, GDIFont, moreFormats) end
 
 ---Parameters:\* quality is an integer in the range 1..100.
 ---\* forceBaseline is an optional boolean parameter that ensures compatibility with all JPEG viewers by preventing too low quality, "cubist" settings. 
----@param reaper boolean
 ---@param filename string
 ---@param bitmap identifier
 ---@param quality integer
 ---@param forceBaseline unsupported
-function reaper.JS_LICE_WriteJPG(reaper, filename, bitmap, quality, forceBaseline) end
+function reaper.JS_LICE_WriteJPG(filename, bitmap, quality, forceBaseline) end
 
 ---Writes the contents of a LICE_IBitMap as png-file.
----@param reaper boolean
 ---@param filename string
 ---@param bitmap identifier
 ---@param wantAlpha boolean
-function reaper.JS_LICE_WritePNG(reaper, filename, bitmap, wantAlpha) end
+function reaper.JS_LICE_WritePNG(filename, bitmap, wantAlpha) end
 
 ---@param listviewHWND identifier
 ---@param index integer
@@ -8030,8 +8027,8 @@ function reaper.Xen_StartSourcePreview(source, gain, loop, outputchanindexIn) en
 function reaper.Xen_StopSourcePreview(preview_id) end
 
 ---Called with parameter value 1 executes one ReaLlm cycle. E.g. for running ReaLlm on custom timer, or deferred. 0 or nothing performs shutdown. Disarming/disabling all monitored inputs and calling with parameter value 1 equals to shutdown.
----@param integer optional
-function reaper.Llm_Do(integer) end
+---@param paramIn? integer
+function reaper.Llm_Do(paramIn) end
 
 ---Get ReaLlm information string. Zero-based indices. Master track index -1. Optional MediaTrack* tr gets results relative to tr. Each line (newline '\n' separated) represents entry. Tracks are separated with ';'. FX are listed after ':' separated with ','.
 ---GRAPH : Mixer routings as network graph in format "node;neighborhood\n" where node is track, and neighborhood is group of tracks in format "track;tr#1;tr#2...\n". Or as "parent;children\n" where first field is parent and rest are children. Or as multiply linked list where first field is node and rest are links. E.g. "7;1;-1;\n" would mean "8th track is connected to 2nd track and Master track."
@@ -8754,8 +8751,7 @@ function reaper.get_action_context() end
 ---        
 ---Note: Mousebuttons will be returned after gfx_init(), the other keyboard-modifier only when using gfx_getchar()!
 ---        
----@param VARIABLES gfx
-function VARIABLES(VARIABLES) end
+function VARIABLES() end
 
 ---Draws an arc of the circle centered at x,y, with ang1/ang2 being specified in radians.
 ---@param x integer
@@ -8763,8 +8759,8 @@ function VARIABLES(VARIABLES) end
 ---@param r integer
 ---@param ang1 number
 ---@param ang2 number
----@param number optional
-function gfx.arc(x, y, r, ang1, ang2, number) end
+---@param antialias? number
+function gfx.arc(x, y, r, ang1, ang2, antialias) end
 
 ---Blits(draws) the content of source-image to another source-image or an opened window.Copies from source (-1 = main framebuffer, or an image from gfx.loadimg() etc), using current opacity and copy mode (set with gfx.a, gfx.mode).If destx/desty are not specified, gfx.x/gfx.y will be used as the destination position.scale (1.0 is unscaled) will be used only if destw/desth are not specified.rotation is an angle in radianssrcx/srcy/srcw/srch specify the source rectangle (if omitted srcw/srch default to image size)destx/desty/destw/desth specify destination rectangle (if not specified destw/desth default to srcw/srch * scale).
 ---@param source integer
@@ -8784,9 +8780,9 @@ function gfx.arc(x, y, r, ang1, ang2, number) end
 function gfx.blit(source, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs) end
 
 ---Deprecated, use gfx.blit instead.Note: the naming of the function might be misleading, as it has nothing to do with blitting of text, but rather is called Blit Ext.
----@param nil source
----@param nil coordinatelist
----@param nil rotation
+---@param  source
+---@param  coordinatelist
+---@param  rotation
 ---@return number retval
 function gfx.blitext() end
 
@@ -8799,9 +8795,9 @@ function gfx.blurto(x, y) end
 ---@param x integer
 ---@param y integer
 ---@param r integer
----@param number optional
----@param number optional
-function gfx.circle(x, y, r, number, number) end
+---@param fill? number
+---@param antialias? number
+function gfx.circle(x, y, r, fill, antialias) end
 
 ---Converts the coordinates x,y to screen coordinates, returns those values.
 ---@param x integer
@@ -8856,10 +8852,10 @@ function gfx.drawnumber(n, ndigits) end
 ---To overcome this, try this to disable the alpha-channel: 
 ---By default, gfx.blit() blits with alpha channel. You can disable this behavior by setting "gfx.mode=2" before calling gfx.blit().
 ---@param str string
----@param integer optional
----@param integer optional
----@param integer optional
-function gfx.drawstr(str, integer, integer, integer) end
+---@param flags? integer
+---@param right? integer
+---@param bottom? integer
+function gfx.drawstr(str, flags, right, bottom) end
 
 ---If char is 0 or omitted, returns a character from the keyboard queue, or 0 if no character is available, or -1 if the graphics window is not open. If char is specified and nonzero, that character's status will be checked, and the function will return greater than 0 if it is pressed.
 ---Common values are standard ASCII, such as 'a', 'A', '=' and '1', but for many keys multi-byte values are used, 
@@ -8908,16 +8904,16 @@ function gfx.getpixel() end
 ---@param r number
 ---@param g number
 ---@param b number
----@param a number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
-function gfx.gradrect(x, y, w, h, r, g, b, a, number, number, number, number, number, number, number, number) end
+---@param a[ number
+---@param drdx? number
+---@param dgdx? number
+---@param dbdx? number
+---@param dadx? number
+---@param drdy? number
+---@param dgdy? number
+---@param dbdy? number
+---@param dady]? number
+function gfx.gradrect(x, y, w, h, r, g, b, a[, drdx, dgdx, dbdx, dadx, drdy, dgdy, dbdy, dady]) end
 
 ---Initializes the graphics window with title name. Suggested width and height can be specified.Once the graphics window is open, gfx.update() should be called periodically. Only one graphics-window can be opened per script! Calling gfx.ini after a window has been opened has no effect.To resize/reposition the window, call gfx.init again and pass an empty string as name-parameter.To retitle the window, run gfx.init again with the new title as parameter name.To get the current window-states, dimensions, etc, you can use gfx.dock).
 ---@param "name" string
@@ -8934,8 +8930,8 @@ function gfx.init("name", width, height, dockstate, xpos, ypos) end
 ---@param y integer
 ---@param x2 integer
 ---@param y2 integer
----@param number optional
-function gfx.line(x, y, x2, y2, number) end
+---@param aa? number
+function gfx.line(x, y, x2, y2, aa) end
 
 ---Draws a line from gfx.x,gfx.y to x,y. If aa is 0.5 or greater, then antialiasing is used. Updates gfx.x and gfx.y to x,y.
 ---@param x integer
@@ -9072,10 +9068,10 @@ function gfx.setcursor(resource_id, custom_cursor_name) end
 
 ---Can select a font and optionally configure it. After calling gfx_setfont(), gfx_texth may be updated to reflect the new average line height.
 ---@param idx integer
----@param string optional
----@param integer optional
----@param integer optional
-function gfx.setfont(idx, string, integer, integer) end
+---@param fontface? string
+---@param sz? integer
+---@param flags? integer
+function gfx.setfont(idx, fontface, sz, flags) end
 
 ---Resize image referenced by index 0..1024-1, width and height must be 0-8192. The contents of the image will be undefined after the resize.
 ---@param image integer
@@ -9123,9 +9119,10 @@ function gfx.transformblit(srcimg, destx, desty, destw, desth, div_w, div_h, tab
 ---@param y2 integer
 ---@param x3 integer
 ---@param y3 integer
----@param integer optional
----@param integer optional
-function gfx.triangle(x1, y1, x2, y2, x3, y3, integer, integer) end
+---@param x4? [optional
+---@param y4? integer
+---@param  ...
+function gfx.triangle(x1, y1, x2, y2, x3, y3, x4, y4, ) end
 
 ---Causes gmem_read()/gmem_write() to read EEL2/JSFX/Video shared memory segment named by parameter. Set to empty string to detach. 6.20+: returns previous shared memory segment name.Must be called, before you can use a specific gmem-variable-index with gmem_write!
 ---@param sharedMemoryName string
@@ -9220,7 +9217,7 @@ function {reaper.array}.ifft_real(size[, permute, offset]) end
 function {reaper.array}.multiply(src, srcoffs, size, destoffs]) end
 
 ---Resizes an array object to size. size must be [0..max_size].
----@param nil size
+---@param  size
 ---@return boolean retval
 function {reaper.array}.resize() end
 
