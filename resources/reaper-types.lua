@@ -255,9 +255,9 @@ function reaper.CountTracks(proj) end
 ---@param track MediaTrack
 ---@param starttime number
 ---@param endtime number
----@param boolean optional
+---@param qnIn? boolean
 ---@return MediaItem item
-function reaper.CreateNewMIDIItemInProj(track, starttime, endtime, boolean) end
+function reaper.CreateNewMIDIItemInProj(track, starttime, endtime, qnIn) end
 
 ---Create an audio accessor object for this take. Must only call from the main thread. 
 ---@param take MediaItem_Take
@@ -621,9 +621,9 @@ function reaper.DeleteTakeMarker(take, idx) end
 ---Deletes one or more stretch markers. Returns number of stretch markers deleted.
 ---@param take MediaItem_Take
 ---@param idx integer
----@param integer optional
+---@param countIn? integer
 ---@return integer count_del_stretchmarkers
-function reaper.DeleteTakeStretchMarkers(take, idx, integer) end
+function reaper.DeleteTakeStretchMarkers(take, idx, countIn) end
 
 ---Delete a tempo/time signature marker. 
 ---@param project ReaProject
@@ -699,12 +699,12 @@ function reaper.DockWindowRemove(hwnd) end
 function reaper.EditTempoTimeSigMarker(project, markerindex) end
 
 ---call with a saved window rect for your window and it'll correct any positioning info.
----@param r integer
----@param r integer
----@param r integer
----@param r integer
----@return integer r, integer r, integer r, integer r
-function reaper.EnsureNotCompletelyOffscreen(r, r, r, r) end
+---@param r.left integer
+---@param r.top integer
+---@param r.right integer
+---@param r.bot integer
+---@return integer r.left, integer r.top, integer r.right, integer r.bot
+function reaper.EnsureNotCompletelyOffscreen(r.left, r.top, r.right, r.bot) end
 
 ---List the files in the "path" directory. Returns NULL/nil when all files have been listed. Use fileindex = -1 to force re-read of directory (invalidate cache). 
 ---@param path string
@@ -749,14 +749,14 @@ function reaper.EnumProjectMarkers3(proj, idx) end
 ---Get ReaProject-object and filename of a project.
 ---idx=-1 for current project,projfn can be NULL if not interested in filename. use idx 0x40000000 for currently rendering project, if any.
 ---@param idx integer
----@return ReaProject retval, optional string
+---@return ReaProject retval, string|nil projfn
 function reaper.EnumProjects(idx) end
 
 ---Enumerate the data stored with the project for a specific extname. Returns false when there is no more data.
 ---@param proj ReaProject
 ---@param extname string
 ---@param idx integer
----@return boolean retval, optional string, optional string
+---@return boolean retval, string|nil key, string|nil val
 function reaper.EnumProjExtState(proj, extname, idx) end
 
 ---Enumerate which tracks will be rendered within this region when using the region render matrix. When called with rendertrack==0, the function returns the first track that will be rendered (which may be the master track); rendertrack==1 will return the next track rendered, and so on. The function returns NULL when there are no more tracks that will be rendered within this region.
@@ -931,7 +931,7 @@ function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 ---@param numchannels integer
 ---@param starttime_sec number
 ---@param numsamplesperchannel integer
----@param samplebuffer array
+---@param samplebuffer reaper.array
 ---@return integer samples
 function reaper.GetAudioAccessorSamples(accessor, samplerate, numchannels, starttime_sec, numsamplesperchannel, samplebuffer) end
 
@@ -1108,7 +1108,7 @@ function reaper.GetInputActivityLevel(input_id) end
 function reaper.GetInputChannelName(channelIndex) end
 
 ---Gets the audio device input/output latency in samples
----@return number inputlatency, number outputLatency
+---@return number|nil retval, number outputLatency
 function reaper.GetInputOutputLatency() end
 
 ---returns time of relevant edit, set which_item to the pcm_source (if applicable), flags (if specified) will be set to 1 for edge resizing, 2 for fade change, 4 for item move, 8 for item slip edit (edit cursor time or start of item)
@@ -1142,7 +1142,7 @@ function reaper.GetLastColorThemeFile() end
 ---markeridx and regionidx are returned not necessarily as the displayed marker/region index, but as the index that can be passed to EnumProjectMarkers. Either or both of markeridx and regionidx may be NULL. 
 ---@param proj ReaProject
 ---@param time number
----@return integer markeridx, integer regionidx
+---@return integer|nil retval, integer regionidx
 function reaper.GetLastMarkerAndCurRegion(proj, time) end
 
 ---Returns the last touched track, it's last touched parameter and tracknumber.The low word of tracknumber is the 1-based track index -- 0 means the master track, 1 means track 1, etc. 
@@ -1264,7 +1264,7 @@ function reaper.GetMediaItemTake_Item(take) end
 ---@param numchannels integer
 ---@param numsamplesperchannel integer
 ---@param want_extra_type integer
----@param buf array
+---@param buf reaper.array
 ---@return integer peaks
 function reaper.GetMediaItemTake_Peaks(take, peakrate, starttime, numchannels, numsamplesperchannel, want_extra_type, buf) end
 
@@ -1753,11 +1753,11 @@ function reaper.GetSetProjectAuthor(proj, set, author) end
 ---Get or set the arrange view grid division. 0.25=quarter note, 1.0/3.0=half note triplet, etc. swingmode can be 1 for swing enabled, swingamt is -1..1. swingmode can be 3 for measure-grid. Returns grid configuration flags
 ---@param project ReaProject
 ---@param set boolean
----@param number optional
----@param integer optional
----@param number optional
----@return integer retval, optional number, optional integer, optional number
-function reaper.GetSetProjectGrid(project, set, number, integer, number) end
+---@param division? number
+---@param swingmode? integer
+---@param swingamt? number
+---@return integer retval, number|nil division, integer|nil swingmode, number|nil swingamt
+function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) end
 
 ---Get or set project information.
 --- 
@@ -1964,7 +1964,7 @@ function reaper.GetTakeEnvelopeByName(take, envname) end
 ---Get information about a take marker. Returns the position in media item source time, or -1 if the take marker does not exist.
 ---@param take MediaItem_Take
 ---@param idx integer
----@return number position, string name, optional integer
+---@return number position, string name, integer|nil color
 function reaper.GetTakeMarker(take, idx) end
 
 ---Retruns the filename of the mediafile in a take. returns NULL if the take is not valid
@@ -1983,7 +1983,7 @@ function reaper.GetTakeNumStretchMarkers(take) end
 ---If position/source position are used to find marker position, their values are not updated.
 ---@param take MediaItem_Take
 ---@param idx integer
----@return integer retval, number pos, optional number
+---@return integer retval, number pos, number|nil srcpos
 function reaper.GetTakeStretchMarker(take, idx) end
 
 ---See SetTakeStretchMarkerSlope
@@ -2024,7 +2024,7 @@ function reaper.GetThemeColor(ini_key, flags) end
 ---If a track panel is hit, string will begin with "tcp" or "mcp" or "tcp.mute" etc (future versions may append additional information). May return NULL with valid info string to indicate non-track thing.
 ---@param screen_x integer
 ---@param screen_y integer
----@return optional MediaTrack, string info
+---@return MediaTrack|nil tr, string info
 function reaper.GetThingFromPoint(screen_x, screen_y) end
 
 ---Return toggle-state of an action. See GetToggleCommandStateEx.
@@ -2086,7 +2086,7 @@ function reaper.GetTrackEnvelopeByName(track, envname) end
 ---Returns the track from the screen coordinates specified. If the screen coordinates refer to a window associated to the track (such as FX), the track will be returned. infoOutOptional will be set to 1 if it is likely an envelope, 2 if it is likely a track FX.Note: You can not get the track at screen-coordinates, where it is hidden by other windows.See GetThingFromPoint
 ---@param screen_x integer
 ---@param screen_y integer
----@return MediaTrack retval, optional integer
+---@return MediaTrack retval, integer|nil info
 function reaper.GetTrackFromPoint(screen_x, screen_y) end
 
 ---Get the guid of a MediaTrack
@@ -2356,9 +2356,9 @@ function reaper.InsertAutomationItem(env, pool_id, position, length) end
 ---@param shape integer
 ---@param tension number
 ---@param selected boolean
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, boolean) end
+function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, noSortIn) end
 
 ---Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.
 ---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.
@@ -2372,9 +2372,9 @@ function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selec
 ---@param shape integer
 ---@param tension number
 ---@param selected boolean
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape, tension, selected, boolean) end
+function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape, tension, selected, noSortIn) end
 
 ---mode: 
 ---0=add to current track, 
@@ -2456,7 +2456,7 @@ function reaper.joystick_destroy(device) end
 
 ---enumerates installed devices, returns GUID as a string
 ---@param index integer
----@return string retval, optional string
+---@return string retval, string|nil namestr
 function reaper.joystick_enum(index) end
 
 ---returns axis value (-1..1)
@@ -2472,7 +2472,7 @@ function reaper.joystick_getbuttonmask(dev) end
 
 ---returns button count
 ---@param dev joystick_device
----@return integer retval, optional integer, optional integer
+---@return integer retval, integer|nil axes, integer|nil povs
 function reaper.joystick_getinfo(dev) end
 
 ---returns POV value (usually 0..655.35, or 655.35 on error)
@@ -2667,7 +2667,7 @@ function reaper.MIDI_GetAllEvts(take) end
 ---Get MIDI CC event properties.
 ---@param take MediaItem_Take
 ---@param ccidx integer
----@return boolean retval, boolean selected, boolean muted, number ppqpos, integer chanmsg, integer number, integer msg2, integer msg3
+---@return boolean retval, boolean selected, boolean muted, number ppqpos, integer chanmsg, integer|nil chan, integer msg2, integer msg3
 function reaper.MIDI_GetCC(take, ccidx) end
 
 ---Get CC shape and bezier tension. See MIDI_GetCC, MIDI_SetCCShape
@@ -2684,7 +2684,7 @@ function reaper.MIDI_GetEvt(take, evtidx) end
 
 ---Returns the most recent MIDI editor grid size for this MIDI take, in QN. Swing is between 0 and 1. Note length is 0 if it follows the grid size.
 ---@param take MediaItem_Take
----@return number retval, optional number, optional number
+---@return number retval, number|nil swing, number|nil noteLen
 function reaper.MIDI_GetGrid(take) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. 
@@ -2751,13 +2751,13 @@ function reaper.MIDI_GetScale(take) end
 ---Get MIDI meta-event properties. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event. For all other meta-messages, type is returned as -2 and msg returned as all zeroes. See MIDI_GetEvt.
 ---@param take MediaItem_Take
 ---@param textsyxevtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param string optional
----@return boolean retval, optional boolean, optional boolean, optional number, optional integer, optional string
-function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, boolean, boolean, number, integer, string) end
+---@param selected? boolean
+---@param muted? boolean
+---@param ppqpos? number
+---@param type? integer
+---@param msg? string
+---@return boolean retval, boolean|nil selected, boolean|nil muted, number|nil ppqpos, integer|nil type, string|nil msg
+function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, selected, muted, ppqpos, type, msg) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. See MIDI_GetHash
 ---@param track MediaTrack
@@ -2800,9 +2800,9 @@ function reaper.MIDI_InsertEvt(take, selected, muted, ppqpos, bytestr) end
 ---@param chan integer
 ---@param pitch integer
 ---@param vel integer
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_InsertNote(take, selected, muted, startppqpos, endppqpos, chan, pitch, vel, boolean) end
+function reaper.MIDI_InsertNote(take, selected, muted, startppqpos, endppqpos, chan, pitch, vel, noSortIn) end
 
 ---Insert a new MIDI text or sysex event. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event.
 ---@param take MediaItem_Take
@@ -2835,36 +2835,36 @@ function reaper.MIDI_SetAllEvts(take, buf) end
 ---Set MIDI CC event properties. Properties passed as NULL will not be set. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param ccidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param chanmsgIn? integer
+---@param chanIn? integer
+---@param msg2In? integer
+---@param msg3In? integer
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetCC(take, ccidx, boolean, boolean, number, integer, integer, integer, integer, boolean) end
+function reaper.MIDI_SetCC(take, ccidx, selectedIn, mutedIn, ppqposIn, chanmsgIn, chanIn, msg2In, msg3In, noSortIn) end
 
 ---Set CC shape and bezier tension. set noSort if setting multiple events, then call MIDI_Sort when done. See MIDI_SetCC, MIDI_GetCCShape
 ---@param take MediaItem_Take
 ---@param ccidx integer
 ---@param shape integer
 ---@param beztension number
----@param boolean optional
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetCCShape(take, ccidx, shape, beztension, boolean) end
+function reaper.MIDI_SetCCShape(take, ccidx, shape, beztension, noSortIn) end
 
 ---Set MIDI event properties. Properties passed as NULL will not be set. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param evtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param string optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param msg? string
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetEvt(take, evtidx, boolean, boolean, number, string, boolean) end
+function reaper.MIDI_SetEvt(take, evtidx, selectedIn, mutedIn, ppqposIn, msg, noSortIn) end
 
 ---Set the start/end positions of a media item that contains a MIDI take.
 ---@param item MediaItem
@@ -2876,28 +2876,28 @@ function reaper.MIDI_SetItemExtents(item, startQN, endQN) end
 ---Set MIDI note properties. Properties passed as NULL (or negative values) will not be set. Set noSort if setting multiple events, then call MIDI_Sort when done. Setting multiple note start positions at once is done more safely by deleting and re-inserting the notes.
 ---@param take MediaItem_Take
 ---@param noteidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param startppqposIn? number
+---@param endppqposIn? number
+---@param chanIn? integer
+---@param pitchIn? integer
+---@param velIn? integer
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetNote(take, noteidx, boolean, boolean, number, number, integer, integer, integer, boolean) end
+function reaper.MIDI_SetNote(take, noteidx, selectedIn, mutedIn, startppqposIn, endppqposIn, chanIn, pitchIn, velIn, noSortIn) end
 
 ---Set MIDI text or sysex event properties. Properties passed as NULL will not be set. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event. set noSort if setting multiple events, then call MIDI_Sort when done.
 ---@param take MediaItem_Take
 ---@param textsyxevtidx integer
----@param boolean optional
----@param boolean optional
----@param number optional
----@param integer optional
----@param string optional
----@param boolean optional
+---@param selectedIn? boolean
+---@param mutedIn? boolean
+---@param ppqposIn? number
+---@param typeIn? integer
+---@param msg? string
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.MIDI_SetTextSysexEvt(take, textsyxevtidx, boolean, boolean, number, integer, string, boolean) end
+function reaper.MIDI_SetTextSysexEvt(take, textsyxevtidx, selectedIn, mutedIn, ppqposIn, typeIn, msg, noSortIn) end
 
 ---Sort MIDI events after multiple calls to MIDI_SetNote, MIDI_SetCC, etc.
 ---@param take MediaItem_Take
@@ -3021,17 +3021,17 @@ function reaper.MuteAllTracks(mute) end
 
 ---With r.??? and sr.??? parameters, you can define coordinates of a rectangle. 
 ---The function will return the left/top/right/bottom coordinates of the viewport that that rectangle is on/closest to.
----@param r integer
----@param r integer
----@param r integer
----@param r integer
----@param sr integer
----@param sr integer
----@param sr integer
----@param sr integer
+---@param r.left integer
+---@param r.top integer
+---@param r.right integer
+---@param r.bot integer
+---@param sr.left integer
+---@param sr.top integer
+---@param sr.right integer
+---@param sr.bot integer
 ---@param wantWorkArea boolean
 ---@return integer left, integer top, integer right, integer bottom
-function reaper.my_getViewport(r, r, r, r, sr, sr, sr, sr, wantWorkArea) end
+function reaper.my_getViewport(r.left, r.top, r.right, r.bot, sr.left, sr.top, sr.right, sr.bot, wantWorkArea) end
 
 ---Get the command ID number for named command that was registered by an extension such as "\_SWS\_ABOUT" or "\_113088d11ae641c193a2b7ede3041ad5" for a ReaScript or a custom action.see [Main\_OnCommand](#Main_OnCommand) for executing actions with command-ID-numbers.Note: never assume that this command-id is valid across multiple installations. That means, the command-id returned by NamedCommandLookup can be different for the same \_ActionCommandID between different Reaper-installations.
 ---So when you want to run a command, using the command-id, ALWAYS get it using NamedCommandLookup in your script first, and never store it somewhere to be used later on.
@@ -3080,8 +3080,8 @@ function reaper.OpenMediaExplorer(mediafn, play) end
 ---Send an OSC message directly to REAPER. The value argument may be NULL. The message will be matched against the default OSC patterns.This is not broadcast outside of Reaper, so you can't control devices, plugins, etc with it!Messages sent via this function can be used for parameter-learn/modulation and as shortcuts for scripts.
 ---The parameter valueIn can be retrieved with the returnvalue val of the function reaper.get_action_context, so sending values to a script is possible that way.
 ---@param message string
----@param number optional
-function reaper.OscLocalMessageToHost(message, number) end
+---@param valueIn? number
+function reaper.OscLocalMessageToHost(message, valueIn) end
 
 ---Parse hh:mm:ss.sss time string, return time in seconds (or 0.0 on error). See [parse\_timestr_pos](#parse_timestr_pos), [parse\_timestr_len](#parse_timestr_len).
 ---@param buf string
@@ -3258,7 +3258,7 @@ function reaper.PCM_Source_Destroy(src) end
 ---@param numchannels integer
 ---@param numsamplesperchannel integer
 ---@param want_extra_type integer
----@param buf array
+---@param buf reaper.array
 ---@return integer retval
 function reaper.PCM_Source_GetPeaks(src, peakrate, starttime, numchannels, numsamplesperchannel, want_extra_type, buf) end
 
@@ -3360,9 +3360,9 @@ function reaper.resolve_fn(in_, out) end
 ---Resolves a filename "in" by using project settings etc. If no file found, out will be a copy of in.
 ---@param in_ string
 ---@param out string
----@param string optional
+---@param checkSubDir? string
 ---@return string out
-function reaper.resolve_fn2(in_, out, string) end
+function reaper.resolve_fn2(in_, out, checkSubDir) end
 
 ---Get the named command for the given command ID. The returned string will not start with '_' (e.g. it will return "SWS_ABOUT"), it will be NULL if command_id is a native action.
 ---@param command_id integer
@@ -3380,6 +3380,7 @@ function reaper.ScaleFromEnvelopeMode(scaling_mode, val) end
 ---@param val number
 ---@return number retval
 function reaper.ScaleToEnvelopeMode(scaling_mode, val) end
+
 
 ---Selects or deselects all MediaItems in a project.
 ---@param proj ReaProject
@@ -3432,14 +3433,14 @@ function reaper.SetEditCurPos2(proj, time, moveview, seekplay) end
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done. See [SetEnvelopePointEx](#SetEnvelopePointEx).
 ---@param envelope TrackEnvelope
 ---@param ptidx integer
----@param number optional
----@param number optional
----@param integer optional
----@param number optional
----@param boolean optional
----@param boolean optional
+---@param timeIn? number
+---@param valueIn? number
+---@param shapeIn? integer
+---@param tensionIn? number
+---@param selectedIn? boolean
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.SetEnvelopePoint(envelope, ptidx, number, number, integer, number, boolean, boolean) end
+function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.
 ---autoitem\_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.
@@ -3450,14 +3451,14 @@ function reaper.SetEnvelopePoint(envelope, ptidx, number, number, integer, numbe
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param ptidx integer
----@param number optional
----@param number optional
----@param integer optional
----@param number optional
----@param boolean optional
----@param boolean optional
+---@param timeIn? number
+---@param valueIn? number
+---@param shapeIn? integer
+---@param tensionIn? number
+---@param selectedIn? boolean
+---@param noSortIn? boolean
 ---@return boolean retval
-function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, number, number, integer, number, boolean, boolean) end
+function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Sets the RPPXML state of an envelope, returns true if successful. 
 ---@param env TrackEnvelope
@@ -3869,18 +3870,18 @@ function reaper.SetRegionRenderMatrix(proj, regionindex, track, addorremove) end
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param nameIn string
----@param number optional
----@param integer optional
+---@param srcposIn? number
+---@param colorIn? integer
 ---@return integer index
-function reaper.SetTakeMarker(take, idx, nameIn, number, integer) end
+function reaper.SetTakeMarker(take, idx, nameIn, srcposIn, colorIn) end
 
 ---Adds or updates a stretch marker. If idx>0, stretch marker will be added. If idx>=0, stretch marker will be updated. When adding, if srcposInOptional is omitted, source position will be auto-calculated. When updating a stretch marker, if srcposInOptional is omitted, srcpos will not be modified. Position/srcposition values will be constrained to nearby stretch markers. Returns index of stretch marker, or -1 if did not insert (or marker already existed at time).
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param pos number
----@param number optional
+---@param srcposIn? number
 ---@return integer retval
-function reaper.SetTakeStretchMarker(take, idx, pos, number) end
+function reaper.SetTakeStretchMarker(take, idx, pos, srcposIn) end
 
 ---Set take stretch marker slope
 ---@param take MediaItem_Take
@@ -4428,16 +4429,16 @@ function reaper.SetTrackUIWidth(track, width, relative, done, igngroupflags) end
 ---@param name string
 ---@param x integer
 ---@param y integer
----@param HWND optional
+---@param hwndParent? HWND
 ---@param ctx identifier
 ---@param ctx2 integer
 ---@param ctx3 integer
-function reaper.ShowPopupMenu(name, x, y, HWND, ctx, ctx2, ctx3) end
+function reaper.ShowPopupMenu(name, x, y, hwndParent, ctx, ctx2, ctx3) end
 
 ---shows the action-list
 ---@param section KbdSectionInfo
----@param HWND optional
-function reaper.ShowActionList(section, HWND) end
+---@param callerWnd? HWND
+function reaper.ShowActionList(section, callerWnd) end
 
 ---Show a message to the user (also useful for debugging). Send "\n" for newline, "" to clear the console.
 ---@param msg string
@@ -4797,7 +4798,7 @@ function reaper.ThemeLayout_GetLayout(section, idx) end
 
 ---returns theme layout parameter. return value is cfg-name, or nil/empty if out of range.
 ---@param wp integer
----@return string retval, optional string, optional integer, optional integer, optional integer, optional integer
+---@return string retval, string|nil desc, integer|nil value, integer|nil defValue, integer|nil minValue, integer|nil maxValue
 function reaper.ThemeLayout_GetParameter(wp) end
 
 ---Refreshes all layouts
@@ -4823,9 +4824,9 @@ function reaper.time_precise() end
 ---convert a beat position (or optionally a beats+measures if measures is non-NULL) to time.
 ---@param proj ReaProject
 ---@param tpos number
----@param integer optional
+---@param measuresIn? integer
 ---@return number retval
-function reaper.TimeMap2_beatsToTime(proj, tpos, integer) end
+function reaper.TimeMap2_beatsToTime(proj, tpos, measuresIn) end
 
 ---get the effective BPM at the time (seconds) position (i.e. 2x in /8 signatures)
 ---@param proj ReaProject
@@ -4852,7 +4853,7 @@ function reaper.TimeMap2_QNToTime(proj, qn) end
 ---if cdenom is non-NULL, will be set to the current time signature denominator.
 ---@param proj ReaProject
 ---@param tpos number
----@return number retval, optional integer, optional integer, optional number, optional integer
+---@return number retval, integer|nil measures, integer|nil cml, number|nil fullbeats, integer|nil cdenom
 function reaper.TimeMap2_timeToBeats(proj, tpos) end
 
 ---converts project time position to QN position.
@@ -4893,7 +4894,7 @@ function reaper.TimeMap_GetTimeSigAtTime(proj, time) end
 ---Find which measure the given QN position falls in.
 ---@param proj ReaProject
 ---@param qn number
----@return integer retval, optional number, optional number
+---@return integer retval, number|nil qnMeasureStart, number|nil qnMeasureEnd
 function reaper.TimeMap_QNToMeasures(proj, qn) end
 
 ---converts project QN position to time.
@@ -5277,13 +5278,13 @@ function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 ---Bandidx: (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
 ---See [TrackFX\_GetEQ](#TrackFX_GetEQ), [TrackFX\_GetEQParam](#TrackFX_GetEQParam), [TrackFX\_SetEQParam](#TrackFX_SetEQParam), [TrackFX\_GetEQBandEnabled](#TrackFX_GetEQBandEnabled).By setting fx you can add 0x1000000 set to reference input FX. 
 ---To use global monitoring inputFX, use the master-track, any other track will access the track's rec-input-fx.
----@param reaper boolean
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param bandtype integer
 ---@param bandidx integer
 ---@param enable boolean
-function reaper.TrackFX_SetEQBandEnabled(reaper, track, fxidx, bandtype, bandidx, enable) end
+---@return boolean 
+function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable) end
 
 ---Returns false if track/fxidx is not ReaEQ. Targets a band matching bandtype.
 ---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.
@@ -5658,7 +5659,7 @@ function reaper.BR_EnvGetPoint(envelope, id) end
 ---faderScaling: true if envelope uses fader scaling
 ---automationItemsOptions: -1->project default, &1=0->don't attach to underl. env., &1->attach to underl. env. on right side, &2->attach to underl. env. on both sides, &4: bypass underl. env.
 ---@param envelope BR_Envelope
----@return boolean active, boolean visible, boolean armed, boolean inLane, integer laneHeight, integer defaultShape, number minValue, number maxValue, number centerValue, integer type, boolean faderScaling, optional integer
+---@return boolean active, boolean visible, boolean armed, boolean inLane, integer laneHeight, integer defaultShape, number minValue, number maxValue, number centerValue, integer type, boolean faderScaling, integer|nil automationItemsOptions
 function reaper.BR_EnvGetProperties(envelope) end
 
 ---[BR] Set envelope point by id (zero-based) in the envelope object allocated with BR_EnvAlloc. To create point instead, pass id = -1. Note that if new point is inserted or existing point's time position is changed, points won't automatically get sorted. To do that, see BR_EnvSortPoints.
@@ -5682,8 +5683,8 @@ function reaper.BR_EnvSetPoint(envelope, id, position, value, shape, selected, b
 ---@param laneHeight integer
 ---@param defaultShape integer
 ---@param faderScaling boolean
----@param integer optional
-function reaper.BR_EnvSetProperties(envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling, integer) end
+---@param automationItemsOptionsIn? integer
+function reaper.BR_EnvSetProperties(envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling, automationItemsOptionsIn) end
 
 ---[BR] Sort envelope points by position. The only reason to call this is if sorted points are explicitly needed after editing them with BR_EnvSetPoint. Note that you do not have to call this before doing BR_EnvFree since it does handle unsorted points too.
 ---@param envelope BR_Envelope
@@ -5697,7 +5698,7 @@ function reaper.BR_EnvValueAtPos(envelope, position) end
 
 ---[BR] Deprecated, see GetSet_ArrangeView2 (REAPER v5.12pre4+)Get start and end time position of arrange view. To set arrange view instead, see BR_SetArrangeView.
 ---@param proj ReaProject
----@return number startTime, number endTime
+---@return number|nil retval, number endTime
 function reaper.BR_GetArrangeView(proj) end
 
 ---[BR] Get closest grid division to position. Note that this functions is different from SnapToGrid in two regards. SnapToGrid() needs snap enabled to work and this one works always. 
@@ -6440,9 +6441,9 @@ function reaper.SNM_GetSetSourceState(item, takeidx, state, setnewvalue) end
 function reaper.SNM_GetSetSourceState2(take, state, setnewvalue) end
 
 ---[S&M] Deprecated, see [GetMediaSourceType](#GetMediaSourceType). Gets the source type of a take. Returns false if failed (e.g. take with empty source, etc..)
----@param takeWDL_FastString MediaItem_Take
+---@param type? MediaItem_Take
 ---@return boolean retval
-function reaper.SNM_GetSourceType(takeWDL_FastString) end
+function reaper.SNM_GetSourceType(type) end
 
 ---[S&M] Deprecated, see TakeFX_/TrackFX_ CopyToTrack/Take, TrackFX/TakeFX _Delete (v5.95pre2+). Move or removes a track FX. Returns true if tr has been updated.
 ---fxId: fx index in chain or -1 for the selected fx. what: 0 to remove, -1 to move fx up in chain, 1 to move fx down in chain.
@@ -6590,9 +6591,9 @@ function reaper.JS_Byte(pointer, offset) end
 ---@param srcy integer
 ---@param srcw integer
 ---@param srch integer
----@param boolean optional
+---@param autoUpdate? boolean
 ---@return integer retval
-function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx, srcy, srcw, srch, boolean) end
+function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx, srcy, srcw, srch, autoUpdate) end
 
 ---On WindowsOS, flickering of composited images can be improved considerably by slowing the refresh rate of the window. The optimal refresh rate may depend on the number of composited bitmaps.minTime is the minimum refresh delay, in seconds, when only one bitmap is composited onto the window. The delay time will increase linearly with the number of bitmaps, up to a maximum of maxTime when numBitmapsWhenMax is reached.If both minTime and maxTime are 0, all delay settings for the window are cleared.Returns:
 ---* retval = 1 if successful, 0 if arguments are invalid (i.e. if maxTime < minTime, or maxBitmaps < 1).
@@ -6636,8 +6637,8 @@ function reaper.JS_File_Stat(filePath) end
 ---@param srxy integer
 ---@param width integer
 ---@param height integer
----@param string optional
-function reaper.JS_GDI_Blit(destHDC, dstx, dsty, sourceHDC, srcx, srxy, width, height, string) end
+---@param mode? string
+function reaper.JS_GDI_Blit(destHDC, dstx, dsty, sourceHDC, srcx, srxy, width, height, mode) end
 
 ---@param color integer
 ---@return identifier font
@@ -6788,8 +6789,8 @@ function reaper.JS_GDI_SetTextColor(deviceHDC, color) end
 ---@param srxy integer
 ---@param srcw integer
 ---@param srch integer
----@param string optional
-function reaper.JS_GDI_StretchBlit(destHDC, dstx, dsty, dstw, dsth, sourceHDC, srcx, srxy, srcw, srch, string) end
+---@param mode? string
+function reaper.JS_GDI_StretchBlit(destHDC, dstx, dsty, dstw, dsth, sourceHDC, srcx, srxy, srcw, srch, mode) end
 
 ---returns the number of item of the listview
 ---@param headerHWND identifier
@@ -7160,19 +7161,19 @@ function reaper.JS_LICE_SetFontFromGDI(LICEFont, GDIFont, moreFormats) end
 
 ---Parameters:\* quality is an integer in the range 1..100.
 ---\* forceBaseline is an optional boolean parameter that ensures compatibility with all JPEG viewers by preventing too low quality, "cubist" settings. 
----@param reaper boolean
 ---@param filename string
 ---@param bitmap identifier
 ---@param quality integer
 ---@param forceBaseline unsupported
-function reaper.JS_LICE_WriteJPG(reaper, filename, bitmap, quality, forceBaseline) end
+---@return boolean 
+function reaper.JS_LICE_WriteJPG(filename, bitmap, quality, forceBaseline) end
 
 ---Writes the contents of a LICE_IBitMap as png-file.
----@param reaper boolean
 ---@param filename string
 ---@param bitmap identifier
 ---@param wantAlpha boolean
-function reaper.JS_LICE_WritePNG(reaper, filename, bitmap, wantAlpha) end
+---@return boolean 
+function reaper.JS_LICE_WritePNG(filename, bitmap, wantAlpha) end
 
 ---@param listviewHWND identifier
 ---@param index integer
@@ -7238,9 +7239,9 @@ function reaper.JS_Mouse_LoadCursor(cursorNumber) end
 ---* If true, the file will be re-loaded and a new handle will be returned.
 ---* WARNING: Each time that a cursor file is re-loaded, the number of GDI objects increases for the entire duration of the REAPER session.If successful, returns a handle to the cursor, which can be used in JS_Mouse_SetCursor.
 ---@param pathAndFileName string
----@param boolean optional
+---@param forceNewLoad? boolean
 ---@return identifier mouse_cursor
-function reaper.JS_Mouse_LoadCursorFromFile(pathAndFileName, boolean) end
+function reaper.JS_Mouse_LoadCursorFromFile(pathAndFileName, forceNewLoad) end
 
 ---Sets the mouse cursor.  (Only lasts while script is running, and for a single "defer" cycle.)
 ---
@@ -7438,10 +7439,10 @@ function reaper.JS_Window_ClientToScreen(windowHWND, x, y) end
 ---@param y integer
 ---@param w integer
 ---@param h integer
----@param string optional
+---@param style? string
 ---@param ownerHWND identifier
----@return identifier retval, optional string
-function reaper.JS_Window_Create(title, className, x, y, w, h, string, ownerHWND) end
+---@return identifier retval, string|nil style
+function reaper.JS_Window_Create(title, className, x, y, w, h, style, ownerHWND) end
 
 ---Destroys the specified window.
 ---
@@ -7742,10 +7743,10 @@ function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 ---@param top integer
 ---@param width integer
 ---@param height integer
----@param string optional
----@param string optional
----@return boolean retval, optional string, optional string
-function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, string, string) end
+---@param ZOrder? string
+---@param flags? string
+---@return boolean retval, string|nil ZOrder, string|nil flags
+function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, ZOrder, flags) end
 
 ---Parameters:* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.           NOTE: API functions can scroll REAPER's windows, but cannot zoom them.  Instead, use actions such as "View: Zoom to one loop iteration".
 ---
@@ -8019,9 +8020,9 @@ function reaper.Xen_GetMediaSourceSamples(src, destbuf, destbufoffset, numframes
 ---@param source PCM_source
 ---@param gain number
 ---@param loop boolean
----@param integer optional
+---@param outputchanindexIn? integer
 ---@return integer retval
-function reaper.Xen_StartSourcePreview(source, gain, loop, integer) end
+function reaper.Xen_StartSourcePreview(source, gain, loop, outputchanindexIn) end
 
 ---Stop audio preview. To stop all running previews, set id=-1
 ---@param preview_id integer
@@ -8029,8 +8030,8 @@ function reaper.Xen_StartSourcePreview(source, gain, loop, integer) end
 function reaper.Xen_StopSourcePreview(preview_id) end
 
 ---Called with parameter value 1 executes one ReaLlm cycle. E.g. for running ReaLlm on custom timer, or deferred. 0 or nothing performs shutdown. Disarming/disabling all monitored inputs and calling with parameter value 1 equals to shutdown.
----@param integer optional
-function reaper.Llm_Do(integer) end
+---@param paramIn? integer
+function reaper.Llm_Do(paramIn) end
 
 ---Get ReaLlm information string. Zero-based indices. Master track index -1. Optional MediaTrack* tr gets results relative to tr. Each line (newline '\n' separated) represents entry. Tracks are separated with ';'. FX are listed after ':' separated with ','.
 ---GRAPH : Mixer routings as network graph in format "node;neighborhood\n" where node is track, and neighborhood is group of tracks in format "track;tr#1;tr#2...\n". Or as "parent;children\n" where first field is parent and rest are children. Or as multiply linked list where first field is node and rest are links. E.g. "7;1;-1;\n" would mean "8th track is connected to 2nd track and Master track."
@@ -8515,12 +8516,12 @@ function reaper.CF_ShellExecute(file) end
 ---
 ---@param item MediaItem
 ---@param windowSize number
----@param reaper identifier
----@param reaper identifier
----@param reaper identifier
----@param reaper identifier
+---@param reaper.array_peaks identifier
+---@param reaper.array_peakpositions identifier
+---@param reaper.array_RMSs identifier
+---@param reaper.array_RMSpositions identifier
 ---@return boolean retval
-function reaper.NF_AnalyzeMediaItemPeakAndRMS(item, windowSize, reaper, reaper, reaper, reaper) end
+function reaper.NF_AnalyzeMediaItemPeakAndRMS(item, windowSize, reaper.array_peaks, reaper.array_peakpositions, reaper.array_RMSs, reaper.array_RMSpositions) end
 
 ---See [NF\_GetMediaItemMaxPeak](#NF_GetMediaItemMaxPeak), additionally returns maxPeakPos (relative to item position).
 ---
@@ -8575,6 +8576,133 @@ function reaper.NF_UpdateSWSMarkerRegionSubWindow() end
 ---@return integer retval
 function reaper.NF_Win32_GetSystemMetrics(nIndex) end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---Adds code to be executed when the script finishes or is ended by the user. Typically used to clean up after the user terminates defer() or runloop() code.You can't defer this atexit-function, when it is run as exit-function, though, when it is run regularily before exiting the script.You can define more than one atexit-function. They will be run in the order they've been registered as atexit-functions.
 ---For example:    reaper.atexit(exit1)
 ---    reaper.atexit(exit2)
@@ -8626,8 +8754,8 @@ function reaper.get_action_context() end
 ---        
 ---Note: Mousebuttons will be returned after gfx_init(), the other keyboard-modifier only when using gfx_getchar()!
 ---        
----@param VARIABLES gfx
-function VARIABLES(VARIABLES) end
+---@return gfx 
+function VARIABLES() end
 
 ---Draws an arc of the circle centered at x,y, with ang1/ang2 being specified in radians.
 ---@param x integer
@@ -8635,27 +8763,30 @@ function VARIABLES(VARIABLES) end
 ---@param r integer
 ---@param ang1 number
 ---@param ang2 number
----@param number optional
-function gfx.arc(x, y, r, ang1, ang2, number) end
+---@param antialias? number
+function gfx.arc(x, y, r, ang1, ang2, antialias) end
 
 ---Blits(draws) the content of source-image to another source-image or an opened window.Copies from source (-1 = main framebuffer, or an image from gfx.loadimg() etc), using current opacity and copy mode (set with gfx.a, gfx.mode).If destx/desty are not specified, gfx.x/gfx.y will be used as the destination position.scale (1.0 is unscaled) will be used only if destw/desth are not specified.rotation is an angle in radianssrcx/srcy/srcw/srch specify the source rectangle (if omitted srcw/srch default to image size)destx/desty/destw/desth specify destination rectangle (if not specified destw/desth default to srcw/srch * scale).
 ---@param source integer
 ---@param scale number
 ---@param rotation number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
+---@param srcx? number
+---@param srcy? number
+---@param srcw? number
+---@param srch? number
+---@param destx? integer
+---@param desty? integer
+---@param destw? integer
+---@param desth? integer
+---@param rotxoffs? integer
+---@param rotyoffs? integer
 ---@return integer source
-function gfx.blit(source, scale, rotation, number, number, number, number, integer, integer, integer, integer, integer, integer) end
+function gfx.blit(source, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs) end
 
 ---Deprecated, use gfx.blit instead.Note: the naming of the function might be misleading, as it has nothing to do with blitting of text, but rather is called Blit Ext.
+---@param nil source
+---@param nil coordinatelist
+---@param nil rotation
 ---@return number retval
 function gfx.blitext() end
 
@@ -8668,9 +8799,9 @@ function gfx.blurto(x, y) end
 ---@param x integer
 ---@param y integer
 ---@param r integer
----@param number optional
----@param number optional
-function gfx.circle(x, y, r, number, number) end
+---@param fill? number
+---@param antialias? number
+function gfx.circle(x, y, r, fill, antialias) end
 
 ---Converts the coordinates x,y to screen coordinates, returns those values.
 ---@param x integer
@@ -8694,9 +8825,9 @@ function gfx.clienttoscreen(x, y) end
 ---@param dtdy number
 ---@param dsdxdy number
 ---@param dtdxdy number
----@param integer optional
+---@param usecliprect? integer
 ---@return number retval
-function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, desth, dsdx, dtdx, dsdy, dtdy, dsdxdy, dtdxdy, integer) end
+function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, desth, dsdx, dtdx, dsdy, dtdy, dsdxdy, dtdxdy, usecliprect) end
 
 ---Queries or sets the docking-state of the gfx.init()-window.
 ---Call with v=-1 to query docked state, otherwise v>=0 to set docked state. 
@@ -8704,12 +8835,12 @@ function gfx.deltablit(srcimg, srcs, srct, srcw, srch, destx, desty, destw, dest
 ---So the first queried/set docker can be top-left-docker or the top docker or even one of the bottom dockers.
 ---The order doesn't seem to make any sense. Especially with more than 16 windows docked in the current screenset.
 ---@param v integer
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@return number querystate, optional integer, optional integer, optional integer, optional integer
-function gfx.dock(v, integer, integer, integer, integer) end
+---@param wx? integer
+---@param wy? integer
+---@param ww? integer
+---@param wh? integer
+---@return number querystate, integer|nil window_x_position, integer|nil window_y_position, integer|nil window_width, integer|nil window_height
+function gfx.dock(v, wx, wy, ww, wh) end
 
 ---Draws the character (can be a numeric ASCII code as well), to gfx.x, gfx.y, and moves gfx.x over by the size of the character.
 ---@param char integer
@@ -8725,10 +8856,10 @@ function gfx.drawnumber(n, ndigits) end
 ---To overcome this, try this to disable the alpha-channel: 
 ---By default, gfx.blit() blits with alpha channel. You can disable this behavior by setting "gfx.mode=2" before calling gfx.blit().
 ---@param str string
----@param integer optional
----@param integer optional
----@param integer optional
-function gfx.drawstr(str, integer, integer, integer) end
+---@param flags? integer
+---@param right? integer
+---@param bottom? integer
+function gfx.drawstr(str, flags, right, bottom) end
 
 ---If char is 0 or omitted, returns a character from the keyboard queue, or 0 if no character is available, or -1 if the graphics window is not open. If char is specified and nonzero, that character's status will be checked, and the function will return greater than 0 if it is pressed.
 ---Common values are standard ASCII, such as 'a', 'A', '=' and '1', but for many keys multi-byte values are used, 
@@ -8742,10 +8873,10 @@ function gfx.drawstr(str, integer, integer, integer) end
 ---- use 65536 as parameter charactercode to query special flags, returns: &1 (supported in this script), &2=window has focus, &4=window is visible  If the user typed in multiple characters, the character queue will hold them. So calling gfx.getchar multiple times, until it returns 0 or -1 will give you all typed keys.Typed characters between 256 and 1024(maybe higher?) seem to hint at multibyte-unicode characters. 
 ---That means, you need to take the next character-value in the character-queue into consideration as well to get the current unicode-character!If unichar is specified, it will be set to the unicode value of the key if available (and the return value may be the unicode value or a raw key value as described above, depending). If unichar is not specified, unicode codepoints greater than 255 will be returned as 'u'<<24 + valueNote that calling gfx.getchar() at least once causes gfx.mouse_cap to reflect keyboard modifiers even when the mouse is not captured.
 ---
----@param integer optional
----@param integer optional
+---@param character? integer
+---@param unicode_char? integer
 ---@return integer charactercode
-function gfx.getchar(integer, integer) end
+function gfx.getchar(character, unicode_char) end
 
 ---Returns filenames, drag'n'dropped into a window created by gfx.init().
 ---Use idx to get a specific filename, that has been dropped into the gfx.init()-window.When returned filename starts with @fx: it is an fx dropped.
@@ -8777,33 +8908,34 @@ function gfx.getpixel() end
 ---@param r number
 ---@param g number
 ---@param b number
----@param a number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
-function gfx.gradrect(x, y, w, h, r, g, b, a, number, number, number, number, number, number, number, number) end
+---@param a[ number
+---@param drdx? number
+---@param dgdx? number
+---@param dbdx? number
+---@param dadx? number
+---@param drdy? number
+---@param dgdy? number
+---@param dbdy? number
+---@param dady]? number
+function gfx.gradrect(x, y, w, h, r, g, b, a[, drdx, dgdx, dbdx, dadx, drdy, dgdy, dbdy, dady]) end
 
 ---Initializes the graphics window with title name. Suggested width and height can be specified.Once the graphics window is open, gfx.update() should be called periodically. Only one graphics-window can be opened per script! Calling gfx.ini after a window has been opened has no effect.To resize/reposition the window, call gfx.init again and pass an empty string as name-parameter.To retitle the window, run gfx.init again with the new title as parameter name.To get the current window-states, dimensions, etc, you can use gfx.dock).
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
----@param integer optional
+---@param "name" string
+---@param width? integer
+---@param height? integer
+---@param dockstate? integer
+---@param xpos? integer
+---@param ypos? integer
 ---@return integer retval
-function gfx.init(integer, integer, integer, integer, integer) end
+function gfx.init("name", width, height, dockstate, xpos, ypos) end
 
 ---Draws a line from x,y to x2,y2, and if aa is not specified or 0.5 or greater, it will be antialiased. 
 ---@param x integer
 ---@param y integer
 ---@param x2 integer
 ---@param y2 integer
----@param number optional
-function gfx.line(x, y, x2, y2, number) end
+---@param aa? number
+function gfx.line(x, y, x2, y2, aa) end
 
 ---Draws a line from gfx.x,gfx.y to x,y. If aa is 0.5 or greater, then antialiasing is used. Updates gfx.x and gfx.y to x,y.
 ---@param x integer
@@ -8835,13 +8967,13 @@ function gfx.measurestr(str) end
 ---@param mul_r number
 ---@param mul_g number
 ---@param mul_b number
----@param number optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
+---@param mul_a? number
+---@param add_r? number
+---@param add_g? number
+---@param add_b? number
+---@param add_a? number
 ---@return integer retval
-function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, number, number, number, number, number) end
+function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, mul_a, add_r, add_g, add_b, add_a) end
 
 ---Formats and draws a string at gfx.x, gfx.y, and updates gfx.x/gfx.y accordingly (the latter only if the formatted string contains newline). For more information on format strings, see sprintf()    * %% = %
 ---    * %s = string from parameter
@@ -8862,9 +8994,10 @@ function gfx.muladdrect(x, y, w, h, mul_r, mul_g, mul_b, number, number, number,
 ---    * %.4f = floating point, minimum of 4 digits after decimal point
 ---    * %10d = integer, minimum of 10 digits (space padded)
 ---    * %010f = integer, minimum of 10 digits (zero padded)Values for format specifiers can be specified as additional parameters to gfx.printf, or within {} in the format specifier (such as %{varname}d, in that case a global variable is always used).
----@param format string
+---@param format[ string
+---@param ...] various
 ---@return number retval
-function gfx.printf(format) end
+function gfx.printf(format[, ...]) end
 
 ---Closes the graphics window.
 ---@return integer retval
@@ -8875,9 +9008,9 @@ function gfx.quit() end
 ---@param y integer
 ---@param w integer
 ---@param h integer
----@param integer optional
+---@param filled? integer
 ---@return integer retval
-function gfx.rect(x, y, w, h, integer) end
+function gfx.rect(x, y, w, h, filled) end
 
 ---Fills a rectangle from gfx.x,gfx.y to x,y. Updates gfx.x,gfx.y to x,y. 
 ---@param x integer
@@ -8891,9 +9024,9 @@ function gfx.rectto(x, y) end
 ---@param w integer
 ---@param h integer
 ---@param radius number
----@param integer optional
+---@param antialias? integer
 ---@return integer retval
-function gfx.roundrect(x, y, w, h, radius, integer) end
+function gfx.roundrect(x, y, w, h, radius, antialias) end
 
 ---Converts the screen coordinates x,y to client coordinates, returns those values.
 ---@param x integer
@@ -8905,13 +9038,13 @@ function gfx.screentoclient(x, y) end
 ---If sets the corresponding gfx-variables.
 ---Sets gfx.r/gfx.g/gfx.b/gfx.a2/gfx.mode sets gfx.dest if final parameter specified
 ---@param r number
----@param number optional
----@param number optional
----@param number optional
----@param integer optional
----@param integer optional
+---@param g? number
+---@param b? number
+---@param a2? number
+---@param mode? integer
+---@param dest? integer
 ---@return integer retval
-function gfx.set(r, number, number, number, integer, integer) end
+function gfx.set(r, g, b, a2, mode, dest) end
 
 ---Sets the mouse cursor. resource_id is a value like 32512 (for an arrow cursor), custom_cursor_name is a string like "arrow" (for the REAPER custom arrow cursor). resource_id must be nonzero, but custom_cursor_name is optional.examples for resource_id:
 ---    101, enter text
@@ -8932,17 +9065,17 @@ function gfx.set(r, number, number, number, integer, integer) end
 ---    116, arrow with cd
 ---    
 ---works only with gfx-window opened.
----@param integer optional
----@param string optional
+---@param resource_id? integer
+---@param custom_cursor_name? string
 ---@return number retval
-function gfx.setcursor(integer, string) end
+function gfx.setcursor(resource_id, custom_cursor_name) end
 
 ---Can select a font and optionally configure it. After calling gfx_setfont(), gfx_texth may be updated to reflect the new average line height.
 ---@param idx integer
----@param string optional
----@param integer optional
----@param integer optional
-function gfx.setfont(idx, string, integer, integer) end
+---@param fontface? string
+---@param sz? integer
+---@param flags? integer
+function gfx.setfont(idx, fontface, sz, flags) end
 
 ---Resize image referenced by index 0..1024-1, width and height must be 0-8192. The contents of the image will be undefined after the resize.
 ---@param image integer
@@ -8990,9 +9123,10 @@ function gfx.transformblit(srcimg, destx, desty, destw, desth, div_w, div_h, tab
 ---@param y2 integer
 ---@param x3 integer
 ---@param y3 integer
----@param integer optional
----@param integer optional
-function gfx.triangle(x1, y1, x2, y2, x3, y3, integer, integer) end
+---@param x4? [optional
+---@param y4? integer
+---@param nil ...
+function gfx.triangle(x1, y1, x2, y2, x3, y3, x4, y4, ) end
 
 ---Causes gmem_read()/gmem_write() to read EEL2/JSFX/Video shared memory segment named by parameter. Set to empty string to detach. 6.20+: returns previous shared memory segment name.Must be called, before you can use a specific gmem-variable-index with gmem_write!
 ---@param sharedMemoryName string
@@ -9013,10 +9147,10 @@ function reaper.gmem_write(index, value) end
 function gfx.update() end
 
 ---Creates a new reaper.array object of maximum and initial size size, if specified, or from the size/values of a table/array. Both size and table/array can be specified, the size parameter will override the table/array size.
----@param values array
----@param size integer
+---@param values] [table|array
+---@param size] [integer
 ---@return ReaperArray reaper_array
-function reaper.new_array(values, size) end
+function reaper.new_array(values], size]) end
 
 ---Adds code to be called back by REAPER. Used to create persistent ReaScripts that continue to run and respond to input, while the user does other tasks. Identical to defer().Note that no undo point will be automatically created when the script finishes, unless you create it explicitly.
 ---@param function_ function
@@ -9024,76 +9158,223 @@ function reaper.new_array(values, size) end
 function reaper.runloop(function_) end
 
 ---Sets the value of zero or more items in the array. If value not specified, 0.0 is used. offset is 1-based, if size omitted then the maximum amount available will be set.
----@param value string
+---@param value [number|string
 ---@param offset integer
----@param size integer
+---@param size] integer
 ---@return boolean retval
-function {reaper.array}.clear(value, offset, size) end
+function {reaper.array}.clear(value, offset, size]) end
 
 ---Convolves complex value pairs from reaper.array, starting at 1-based srcoffs, reading/writing to 1-based destoffs. size is in normal items (so it must be even)
----@param src array
+---@param src [reaper.array
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs integer
+---@param destoffs] integer
 ---@return integer retval
-function {reaper.array}.convolve(src, srcoffs, size, destoffs) end
+function {reaper.array}.convolve(src, srcoffs, size, destoffs]) end
 
 ---Copies values from reaper.array or table, starting at 1-based srcoffs, writing to 1-based destoffs.
----@param src array
+---@param src [reaper.array
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs integer
+---@param destoffs] integer
 ---@return integer retval
-function {reaper.array}.copy(src, srcoffs, size, destoffs) end
+function {reaper.array}.copy(src, srcoffs, size, destoffs]) end
 
 ---Performs a forward FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled following the FFT to be in normal order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.fft(size, permute, offset) end
+function {reaper.array}.fft(size[, permute, offset]) end
 
 ---Performs a forward real->complex FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled following the FFT to be in normal order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.fft_real(size, permute, offset) end
+function {reaper.array}.fft_real(size[, permute, offset]) end
 
 ---Returns the maximum (allocated) size of the array.
 ---@return integer size
 function {reaper.array}.get_alloc() end
 
 ---Performs a backwards FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled before the IFFT to be in fft-order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.ifft(size, permute, offset) end
+function {reaper.array}.ifft(size[, permute, offset]) end
 
 ---Performs a backwards complex->real FFT of size. size must be a power of two between 4 and 32768 inclusive. If permute is specified and true, the values will be shuffled before the IFFT to be in fft-order.
----@param size integer
+---@param size[ integer
 ---@param permute boolean
----@param offset integer
+---@param offset] integer
 ---@return boolean retval
-function {reaper.array}.ifft_real(size, permute, offset) end
+function {reaper.array}.ifft_real(size[, permute, offset]) end
 
 ---Multiplies values from reaper.array, starting at 1-based srcoffs, reading/writing to 1-based destoffs.
+---@param src [{reaper.array}
 ---@param srcoffs integer
 ---@param size integer
----@param destoffs number
+---@param destoffs] number
 ---@return integer retvals
-function {reaper.array}.multiply(srcoffs, size, destoffs) end
+function {reaper.array}.multiply(src, srcoffs, size, destoffs]) end
 
 ---Resizes an array object to size. size must be [0..max_size].
+---@param nil size
 ---@return boolean retval
 function {reaper.array}.resize() end
 
 ---Returns a new table with values from items in the array. Offset is 1-based and if size is omitted all available values are used.
----@param offset integer
----@param size integer
+---@param offset [integer
+---@param size] integer
 ---@return table new_table
-function {reaper.array}.table(offset, size) end
+function {reaper.array}.table(offset, size]) end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---Show the about dialog of the given package entry.
 ---The repository index is downloaded asynchronously if the cached copy doesn't exist or is older than one week.see ReaPack_GetOwner to get this parameter
@@ -9174,9 +9455,9 @@ function reaper.osara_outputMessage(message) end
 function reaper.RDNA_GetMediaSourceMetadata(src, metaType, key, buf, bufSize) end
 
 ---Clears ReaFab control map, optionally based on matching idString. Returns true on success.
----@param string optional
+---@param idStringIn? string
 ---@return boolean retval
-function reaper.Fab_Clear(string) end
+function reaper.Fab_Clear(idStringIn) end
 
 ---Runs ReaFab actions/commands. First parameter (command) is ReaFab command number, e.g. 3 for 3rd encoder rotation. Second parameter (val) is MIDI CC Relative value. Value 1 is increment of 1, 127 is decrement of 1. 2 is inc 2, 126 is dec 2 and so on. For button press (commands 9-32) a value of 127 is recommended.
 ---@param command integer
@@ -9206,13 +9487,4706 @@ function reaper.Fab_Get(command) end
 ---@param command integer
 ---@param paramId string
 ---@param control integer
----@param integer optional
----@param number optional
----@param number optional
----@param number optional
----@param number optional
+---@param bandsIn? integer
+---@param stepIn? number
+---@param accelIn? number
+---@param minvalIn? number
+---@param maxvalIn? number
 ---@return boolean retval
-function reaper.Fab_Map(fxId, command, paramId, control, integer, number, number, number, number) end
+function reaper.Fab_Map(fxId, command, paramId, control, bandsIn, stepIn, accelIn, minvalIn, maxvalIn) end
+
+---Accept contents of a given type. If DragDropFlags_AcceptBeforeDelivery is set
+---you can peek into the payload before the mouse button is released.
+---@param ctx ImGui_Context
+---@param type string
+---@param payload string
+---@param flagsIn? integer
+---@return boolean retval, string payload
+function reaper.ImGui_AcceptDragDropPayload(ctx, type, payload, flagsIn) end
+
+---Accept a list of dropped files. See AcceptDragDropPayload and GetDragDropPayloadFile.
+---@param ctx ImGui_Context
+---@param count integer
+---@param flagsIn? integer
+---@return boolean retval, integer count
+function reaper.ImGui_AcceptDragDropPayloadFiles(ctx, count, flagsIn) end
+
+---Accept a RGB color. See AcceptDragDropPayload.
+---@param ctx ImGui_Context
+---@param rgb integer
+---@param flagsIn? integer
+---@return boolean retval, integer rgb
+function reaper.ImGui_AcceptDragDropPayloadRGB(ctx, rgb, flagsIn) end
+
+---Accept a RGBA color. See AcceptDragDropPayload.
+---@param ctx ImGui_Context
+---@param rgba integer
+---@param flagsIn? integer
+---@return boolean retval, integer rgba
+function reaper.ImGui_AcceptDragDropPayloadRGBA(ctx, rgba, flagsIn) end
+
+---Vertically align upcoming text baseline to StyleVar_FramePadding.y so that it
+---will align properly to regularly framed items (call if you have text on a line
+---before a framed item).
+---@param ctx ImGui_Context
+function reaper.ImGui_AlignTextToFramePadding(ctx) end
+
+---Square button with an arrow shape. 'dir' is one of the Dir_* values
+---@param ctx ImGui_Context
+---@param str_id string
+---@param dir integer
+---@return boolean 
+function reaper.ImGui_ArrowButton(ctx, str_id, dir) end
+
+---Link the object's lifetime to the given context.
+---Objects can be draw list splitters, fonts, images, list clippers, etc.
+---Call Detach to let the object be garbage-collected after unuse again.List clipper objects may only be attached to the context they were created for.Fonts are (currently) a special case: they must be attached to the context
+---before usage. Furthermore, fonts may only be attached or detached immediately
+---after the context is created or before any other function calls modifying the
+---context per defer cycle. See "limitations" in the font API documentation.
+---@param obj? ImGui_Context
+function reaper.ImGui_Attach(obj) end
+
+---Push window to the stack and start appending to it.- Passing true to 'p_open' shows a window-closing widget in the upper-right
+---  corner of the window, which clicking will set the boolean to false when returned.
+---- You may append multiple times to the same window during the same frame by
+---  calling Begin()/End() pairs multiple times. Some information such as 'flags'
+---  or 'p_open' will only be considered by the first call to Begin().
+---- Begin() return false to indicate the window is collapsed or fully clipped,
+---  so you may early out and omit submitting anything to the window.
+---@param ctx ImGui_Context
+---@param name string
+---@param p_open? boolean
+---@param flagsIn? integer
+---@return boolean retval, boolean|nil p_open
+function reaper.ImGui_Begin(ctx, name, p_open, flagsIn) end
+
+---For each independent axis of 'size':
+---- \&gt; 0.0: fixed size
+---- = 0.0: use remaining host window size
+---- &lt; 0.0: use remaining window size minus abs(size)
+---(Each axis can use a different mode, e.g. size = 0x400.)Returns false to indicate the window is collapsed or fully clipped, so you may early out and omit submitting anything to the window.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param size_wIn? number
+---@param size_hIn? number
+---@param borderIn? boolean
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginChild(ctx, str_id, size_wIn, size_hIn, borderIn, flagsIn) end
+
+---Helper to create a child window / scrolling region that looks like a normal
+---widget frame. See BeginChild.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param size_w number
+---@param size_h number
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginChildFrame(ctx, str_id, size_w, size_h, flagsIn) end
+
+---The BeginCombo/EndCombo API allows you to manage your contents and selection
+---state however you want it, by creating e.g. Selectable items.
+---@param ctx ImGui_Context
+---@param label string
+---@param preview_value string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginCombo(ctx, label, preview_value, flagsIn) end
+
+---Disable all user interactions and dim items visuals
+---(applying StyleVar_DisabledAlpha over current colors).BeginDisabled(false) essentially does nothing useful but is provided to
+---facilitate use of boolean expressions.
+---If you can avoid calling BeginDisabled(false)/EndDisabled() best to avoid it.
+---@param ctx ImGui_Context
+---@param disabledIn? boolean
+function reaper.ImGui_BeginDisabled(ctx, disabledIn) end
+
+---Call after submitting an item which may be dragged. when this return true,
+---you can call SetDragDropPayload() + EndDragDropSource()If you stop calling BeginDragDropSource() the payload is preserved however
+---it won't have a preview tooltip (we currently display a fallback "..." tooltip
+---as replacement).
+---@param ctx ImGui_Context
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginDragDropSource(ctx, flagsIn) end
+
+---Call after submitting an item that may receive a payload.
+---If this returns true, you can call AcceptDragDropPayload + EndDragDropTarget.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_BeginDragDropTarget(ctx) end
+
+---Lock horizontal starting position. See EndGroup.
+---@param ctx ImGui_Context
+function reaper.ImGui_BeginGroup(ctx) end
+
+---Open a framed scrolling region. This is essentially a thin wrapper to using
+---BeginChild/EndChild with some stylistic changes.The BeginListBox/EndListBox API allows you to manage your contents and selection
+---state however you want it, by creating e.g. Selectable or any items.- Choose frame width:
+---  - width  &gt; 0.0: custom
+---  - width  &lt; 0.0 or -FLT_MIN: right-align
+---  - width  = 0.0 (default): use current ItemWidth
+---- Choose frame height:
+---  - height &gt; 0.0: custom
+---  - height &lt; 0.0 or -FLT_MIN: bottom-align
+---  - height = 0.0 (default): arbitrary default height which can fit ~7 itemsSee EndListBox.
+---@param ctx ImGui_Context
+---@param label string
+---@param size_wIn? number
+---@param size_hIn? number
+---@return boolean 
+function reaper.ImGui_BeginListBox(ctx, label, size_wIn, size_hIn) end
+
+---Create a sub-menu entry. only call EndMenu if this returns true!
+---@param ctx ImGui_Context
+---@param label string
+---@param enabledIn? boolean
+---@return boolean 
+function reaper.ImGui_BeginMenu(ctx, label, enabledIn) end
+
+---Append to menu-bar of current window (requires WindowFlags_MenuBar flag set
+---on parent window). See EndMenuBar.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_BeginMenuBar(ctx) end
+
+---Query popup state, if open start appending into the window. Call EndPopup
+---afterwards. WindowFlags* are forwarded to the window.Return true if the popup is open, and you can start outputting to it.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginPopup(ctx, str_id, flagsIn) end
+
+---This is a helper to handle the simplest case of associating one named popup
+---to one given widget. You can pass a nil str_id to use the identifier of the last
+---item. This is essentially the same as calling OpenPopupOnItemClick + BeginPopup
+---but written to avoid computing the ID twice because BeginPopupContext*
+---functions may be called very frequently.If you want to use that on a non-interactive item such as Text you need to pass
+---in an explicit ID here.
+---@param ctx ImGui_Context
+---@param str_idIn? string
+---@param popup_flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginPopupContextItem(ctx, str_idIn, popup_flagsIn) end
+
+---Open+begin popup when clicked on current window.
+---@param ctx ImGui_Context
+---@param str_idIn? string
+---@param popup_flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginPopupContextWindow(ctx, str_idIn, popup_flagsIn) end
+
+---Block every interaction behind the window, cannot be closed by user, add a
+---dimming background, has a title bar. Return true if the modal is open, and you
+---can start outputting to it. See BeginPopup.
+---@param ctx ImGui_Context
+---@param name string
+---@param p_open? boolean
+---@param flagsIn? integer
+---@return boolean retval, boolean|nil p_open
+function reaper.ImGui_BeginPopupModal(ctx, name, p_open, flagsIn) end
+
+---Create and append into a TabBar.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_BeginTabBar(ctx, str_id, flagsIn) end
+
+---Create a Tab. Returns true if the Tab is selected.
+---Set 'p_open' to true to enable the close button.
+---@param ctx ImGui_Context
+---@param label string
+---@param p_open? boolean
+---@param flagsIn? integer
+---@return boolean retval, boolean|nil p_open
+function reaper.ImGui_BeginTabItem(ctx, label, p_open, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param str_id string
+---@param column integer
+---@param flagsIn? integer
+---@param outer_size_wIn? number
+---@param outer_size_hIn? number
+---@param inner_widthIn? number
+---@return boolean 
+function reaper.ImGui_BeginTable(ctx, str_id, column, flagsIn, outer_size_wIn, outer_size_hIn, inner_widthIn) end
+
+---Begin/append a tooltip window.
+---To create full-featured tooltip (with any kind of items).
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_BeginTooltip(ctx) end
+
+---Draw a small circle + keep the cursor on the same line.
+---Advance cursor x position by GetTreeNodeToLabelSpacing,
+---same distance that TreeNode uses.
+---@param ctx ImGui_Context
+function reaper.ImGui_Bullet(ctx) end
+
+---Shortcut for Bullet + Text.
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_BulletText(ctx, text) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param size_wIn? number
+---@param size_hIn? number
+---@return boolean 
+function reaper.ImGui_Button(ctx, label, size_wIn, size_hIn) end
+
+---React on left mouse button (default).
+---@return integer retval
+function reaper.ImGui_ButtonFlags_MouseButtonLeft() end
+
+---React on center mouse button.
+---@return integer retval
+function reaper.ImGui_ButtonFlags_MouseButtonMiddle() end
+
+---React on right mouse button.
+---@return integer retval
+function reaper.ImGui_ButtonFlags_MouseButtonRight() end
+
+---@return integer retval
+function reaper.ImGui_ButtonFlags_None() end
+
+---Width of item given pushed settings and current cursor position.
+---NOT necessarily the width of last item unlike most 'Item' functions.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_CalcItemWidth(ctx) end
+
+---@param ctx ImGui_Context
+---@param text string
+---@param w number
+---@param h number
+---@param hide_text_after_double_hashIn? boolean
+---@param wrap_widthIn? number
+---@return number w, number h
+function reaper.ImGui_CalcTextSize(ctx, text, w, h, hide_text_after_double_hashIn, wrap_widthIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v boolean
+---@return boolean retval, boolean v
+function reaper.ImGui_Checkbox(ctx, label, v) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param flags integer
+---@param flags_value integer
+---@return boolean retval, integer flags
+function reaper.ImGui_CheckboxFlags(ctx, label, flags, flags_value) end
+
+---Manually close the popup we have begin-ed into.
+---Use inside the BeginPopup/EndPopup scope to close manually.CloseCurrentPopup() is called by default by Selectable/MenuItem when activated.
+---@param ctx ImGui_Context
+function reaper.ImGui_CloseCurrentPopup(ctx) end
+
+---@return integer retval
+function reaper.ImGui_Col_Border() end
+
+---@return integer retval
+function reaper.ImGui_Col_BorderShadow() end
+
+---@return integer retval
+function reaper.ImGui_Col_Button() end
+
+---@return integer retval
+function reaper.ImGui_Col_ButtonActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_ButtonHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_CheckMark() end
+
+---Background of child windows.
+---@return integer retval
+function reaper.ImGui_Col_ChildBg() end
+
+---Background color for empty node (e.g. CentralNode with no window docked into it).
+---@return integer retval
+function reaper.ImGui_Col_DockingEmptyBg() end
+
+---Preview overlay color when about to docking something.
+---@return integer retval
+function reaper.ImGui_Col_DockingPreview() end
+
+---Rectangle highlighting a drop target
+---@return integer retval
+function reaper.ImGui_Col_DragDropTarget() end
+
+---Background of checkbox, radio button, plot, slider, text input.
+---@return integer retval
+function reaper.ImGui_Col_FrameBg() end
+
+---@return integer retval
+function reaper.ImGui_Col_FrameBgActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_FrameBgHovered() end
+
+---Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem.
+---@return integer retval
+function reaper.ImGui_Col_Header() end
+
+---@return integer retval
+function reaper.ImGui_Col_HeaderActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_HeaderHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_MenuBarBg() end
+
+---Darken/colorize entire screen behind a modal window, when one is active.
+---@return integer retval
+function reaper.ImGui_Col_ModalWindowDimBg() end
+
+---Gamepad/keyboard: current highlighted item.
+---@return integer retval
+function reaper.ImGui_Col_NavHighlight() end
+
+---Darken/colorize entire screen behind the CTRL+TAB window list, when active.
+---@return integer retval
+function reaper.ImGui_Col_NavWindowingDimBg() end
+
+---Highlight window when using CTRL+TAB.
+---@return integer retval
+function reaper.ImGui_Col_NavWindowingHighlight() end
+
+---@return integer retval
+function reaper.ImGui_Col_PlotHistogram() end
+
+---@return integer retval
+function reaper.ImGui_Col_PlotHistogramHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_PlotLines() end
+
+---@return integer retval
+function reaper.ImGui_Col_PlotLinesHovered() end
+
+---Background of popups, menus, tooltips windows.
+---@return integer retval
+function reaper.ImGui_Col_PopupBg() end
+
+---Resize grip in lower-right and lower-left corners of windows.
+---@return integer retval
+function reaper.ImGui_Col_ResizeGrip() end
+
+---@return integer retval
+function reaper.ImGui_Col_ResizeGripActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_ResizeGripHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_ScrollbarBg() end
+
+---@return integer retval
+function reaper.ImGui_Col_ScrollbarGrab() end
+
+---@return integer retval
+function reaper.ImGui_Col_ScrollbarGrabActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_ScrollbarGrabHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_Separator() end
+
+---@return integer retval
+function reaper.ImGui_Col_SeparatorActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_SeparatorHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_SliderGrab() end
+
+---@return integer retval
+function reaper.ImGui_Col_SliderGrabActive() end
+
+---TabItem in a TabBar
+---@return integer retval
+function reaper.ImGui_Col_Tab() end
+
+---@return integer retval
+function reaper.ImGui_Col_TabActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_TabHovered() end
+
+---@return integer retval
+function reaper.ImGui_Col_TabUnfocused() end
+
+---@return integer retval
+function reaper.ImGui_Col_TabUnfocusedActive() end
+
+---Table inner borders (prefer using Alpha=1.0 here).
+---@return integer retval
+function reaper.ImGui_Col_TableBorderLight() end
+
+---Table outer and header borders (prefer using Alpha=1.0 here).
+---@return integer retval
+function reaper.ImGui_Col_TableBorderStrong() end
+
+---Table header background.
+---@return integer retval
+function reaper.ImGui_Col_TableHeaderBg() end
+
+---Table row background (even rows).
+---@return integer retval
+function reaper.ImGui_Col_TableRowBg() end
+
+---Table row background (odd rows).
+---@return integer retval
+function reaper.ImGui_Col_TableRowBgAlt() end
+
+---@return integer retval
+function reaper.ImGui_Col_Text() end
+
+---@return integer retval
+function reaper.ImGui_Col_TextDisabled() end
+
+---@return integer retval
+function reaper.ImGui_Col_TextSelectedBg() end
+
+---@return integer retval
+function reaper.ImGui_Col_TitleBg() end
+
+---@return integer retval
+function reaper.ImGui_Col_TitleBgActive() end
+
+---@return integer retval
+function reaper.ImGui_Col_TitleBgCollapsed() end
+
+---Background of normal windows. See also WindowFlags_NoBackground.
+---@return integer retval
+function reaper.ImGui_Col_WindowBg() end
+
+---Returns true when opened but do not indent nor push into the ID stack
+---(because of the TreeNodeFlags_NoTreePushOnOpen flag).This is basically the same as calling TreeNode(label, TreeNodeFlags_CollapsingHeader).
+---You can remove the _NoTreePushOnOpen flag if you want behavior closer to normal
+---TreeNode.When 'visible' is provided: if 'true' display an additional small close button
+---on upper right of the header which will set the bool to false when clicked,
+---if 'false' don't display the header.
+---@param ctx ImGui_Context
+---@param label string
+---@param p_visible boolean
+---@param flagsIn? integer
+---@return boolean retval, boolean p_visible
+function reaper.ImGui_CollapsingHeader(ctx, label, p_visible, flagsIn) end
+
+---Display a color square/button, hover for details, return true when pressed.
+---Color is in 0xRRGGBBAA or, if ColorEditFlags_NoAlpha is set, 0xRRGGBB.
+---@param ctx ImGui_Context
+---@param desc_id string
+---@param col_rgba integer
+---@param flagsIn? integer
+---@param size_wIn? number
+---@param size_hIn? number
+---@return boolean 
+function reaper.ImGui_ColorButton(ctx, desc_id, col_rgba, flagsIn, size_wIn, size_hIn) end
+
+---Pack 0..1 RGBA values into a 32-bit integer (0xRRGGBBAA).
+---@param r number
+---@param g number
+---@param b number
+---@param a number
+---@return integer retval
+function reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, a) end
+
+---Convert HSV values (0..1) into RGB (0..1).
+---@param h number
+---@param s number
+---@param v number
+---@return number r, number g, number b
+function reaper.ImGui_ColorConvertHSVtoRGB(h, s, v) end
+
+---Convert a native color coming from REAPER or 0xRRGGBB to native.
+---This swaps the red and blue channels on Windows.
+---@param rgb integer
+---@return integer retval
+function reaper.ImGui_ColorConvertNative(rgb) end
+
+---Convert RGB values (0..1) into HSV (0..1).
+---@param r number
+---@param g number
+---@param b number
+---@return number h, number s, number v
+function reaper.ImGui_ColorConvertRGBtoHSV(r, g, b) end
+
+---Unpack a 32-bit integer (0xRRGGBBAA) into separate RGBA values (0..1).
+---@param rgba integer
+---@return number r, number g, number b, number a
+function reaper.ImGui_ColorConvertU32ToDouble4(rgba) end
+
+---Color is in 0xXXRRGGBB. XX is ignored and will not be modified.
+---@param ctx ImGui_Context
+---@param label string
+---@param col_rgb integer
+---@param flagsIn? integer
+---@return boolean retval, integer col_rgb
+function reaper.ImGui_ColorEdit3(ctx, label, col_rgb, flagsIn) end
+
+---Color is in 0xRRGGBBAA or, if ColorEditFlags_NoAlpha is set, 0xXXRRGGBB
+---(XX is ignored and will not be modified).
+---@param ctx ImGui_Context
+---@param label string
+---@param col_rgba integer
+---@param flagsIn? integer
+---@return boolean retval, integer col_rgba
+function reaper.ImGui_ColorEdit4(ctx, label, col_rgba, flagsIn) end
+
+---ColorEdit, ColorPicker: show vertical alpha bar/gradient in picker.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_AlphaBar() end
+
+---ColorEdit, ColorPicker, ColorButton: display preview as a transparent color
+---   over a checkerboard, instead of opaque.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_AlphaPreview() end
+
+---ColorEdit, ColorPicker, ColorButton: display half opaque / half checkerboard,
+---   instead of opaque.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_AlphaPreviewHalf() end
+
+---ColorEdit: override _display_ type to HSV. ColorPicker:
+---   select any combination using one or more of RGB/HSV/Hex.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_DisplayHSV() end
+
+---ColorEdit: override _display_ type to Hex. ColorPicker:
+---   select any combination using one or more of RGB/HSV/Hex.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_DisplayHex() end
+
+---ColorEdit: override _display_ type to RGB. ColorPicker:
+---   select any combination using one or more of RGB/HSV/Hex.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_DisplayRGB() end
+
+---ColorEdit, ColorPicker, ColorButton: _display_ values formatted as 0.0..1.0
+---   floats instead of 0..255 integers. No round-trip of value via integers.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_Float() end
+
+---ColorEdit, ColorPicker: input and output data in HSV format.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_InputHSV() end
+
+---ColorEdit, ColorPicker: input and output data in RGB format.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_InputRGB() end
+
+---ColorEdit, ColorPicker, ColorButton: ignore Alpha component
+---  (will only read 3 components from the input pointer).
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoAlpha() end
+
+---ColorButton: disable border (which is enforced by default).
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoBorder() end
+
+---ColorEdit: disable drag and drop target. ColorButton: disable drag and drop source.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoDragDrop() end
+
+---ColorEdit, ColorPicker: disable inputs sliders/text widgets
+---   (e.g. to show only the small preview color square).
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoInputs() end
+
+---ColorEdit, ColorPicker: disable display of inline text label
+---   (the label is still forwarded to the tooltip and picker).
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoLabel() end
+
+---ColorEdit: disable toggling options menu when right-clicking on inputs/small preview.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoOptions() end
+
+---ColorEdit: disable picker when clicking on color square.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoPicker() end
+
+---ColorPicker: disable bigger color preview on right side of the picker,
+---   use small color square preview instead.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoSidePreview() end
+
+---ColorEdit, ColorPicker: disable color square preview next to the inputs.
+---   (e.g. to show only the inputs).
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoSmallPreview() end
+
+---ColorEdit, ColorPicker, ColorButton: disable tooltip when hovering the preview.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_NoTooltip() end
+
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_None() end
+
+---ColorPicker: bar for Hue, rectangle for Sat/Value.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_PickerHueBar() end
+
+---ColorPicker: wheel for Hue, triangle for Sat/Value.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_PickerHueWheel() end
+
+---ColorEdit, ColorPicker, ColorButton: _display_ values formatted as 0..255.
+---@return integer retval
+function reaper.ImGui_ColorEditFlags_Uint8() end
+
+---Color is in 0xXXRRGGBB. XX is ignored and will not be modified.
+---@param ctx ImGui_Context
+---@param label string
+---@param col_rgb integer
+---@param flagsIn? integer
+---@return boolean retval, integer col_rgb
+function reaper.ImGui_ColorPicker3(ctx, label, col_rgb, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param col_rgba integer
+---@param flagsIn? integer
+---@param ref_colIn? integer
+---@return boolean retval, integer col_rgba
+function reaper.ImGui_ColorPicker4(ctx, label, col_rgba, flagsIn, ref_colIn) end
+
+---Helper over BeginCombo/EndCombo for convenience purpose. Each item must be
+---null-terminated (requires REAPER v6.44 or newer for EEL and Lua).
+---@param ctx ImGui_Context
+---@param label string
+---@param current_item integer
+---@param items string
+---@param popup_max_height_in_itemsIn? integer
+---@return boolean retval, integer current_item
+function reaper.ImGui_Combo(ctx, label, current_item, items, popup_max_height_in_itemsIn) end
+
+---Max ~20 items visible.
+---@return integer retval
+function reaper.ImGui_ComboFlags_HeightLarge() end
+
+---As many fitting items as possible.
+---@return integer retval
+function reaper.ImGui_ComboFlags_HeightLargest() end
+
+---Max ~8 items visible (default).
+---@return integer retval
+function reaper.ImGui_ComboFlags_HeightRegular() end
+
+---Max ~4 items visible. Tip: If you want your combo popup to be a specific size
+---you can use SetNextWindowSizeConstraints prior to calling BeginCombo.
+---@return integer retval
+function reaper.ImGui_ComboFlags_HeightSmall() end
+
+---Display on the preview box without the square arrow button.
+---@return integer retval
+function reaper.ImGui_ComboFlags_NoArrowButton() end
+
+---Display only a square arrow button.
+---@return integer retval
+function reaper.ImGui_ComboFlags_NoPreview() end
+
+---@return integer retval
+function reaper.ImGui_ComboFlags_None() end
+
+---Align the popup toward the left by default.
+---@return integer retval
+function reaper.ImGui_ComboFlags_PopupAlignLeft() end
+
+---No condition (always set the variable).
+---@return integer retval
+function reaper.ImGui_Cond_Always() end
+
+---Set the variable if the object/window is appearing after being
+---   hidden/inactive (or the first time).
+---@return integer retval
+function reaper.ImGui_Cond_Appearing() end
+
+---Set the variable if the object/window has no persistently saved data
+---   (no entry in .ini file).
+---@return integer retval
+function reaper.ImGui_Cond_FirstUseEver() end
+
+---Set the variable once per runtime session (only the first call will succeed).
+---@return integer retval
+function reaper.ImGui_Cond_Once() end
+
+---[BETA] Enable docking functionality.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_DockingEnable() end
+
+---Master keyboard navigation enable flag.
+---Enable full Tabbing + directional arrows + space/enter to activate.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NavEnableKeyboard() end
+
+---Instruct navigation to move the mouse cursor.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NavEnableSetMousePos() end
+
+---Instruct navigation to not capture global keyboard input when
+---   ConfigFlags_NavEnableKeyboard is set (see SetNextFrameWantCaptureKeyboard).
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NavNoCaptureKeyboard() end
+
+---Instruct imgui to ignore mouse position/buttons.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NoMouse() end
+
+---Instruct backend to not alter mouse cursor shape and visibility.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NoMouseCursorChange() end
+
+---Disable state restoration and persistence for the whole context.
+---@return integer retval
+function reaper.ImGui_ConfigFlags_NoSavedSettings() end
+
+---@return integer retval
+function reaper.ImGui_ConfigFlags_None() end
+
+---Some calls to Begin()/BeginChild() will return false.
+---Will cycle through window depths then repeat. Suggested use: add
+---"SetConfigVar(ConfigVar_DebugBeginReturnValueLoop(), GetKeyMods() == Mod_Shift"
+---in your main loop then occasionally press SHIFT.
+---Windows should be flickering while running.
+---@return integer retval
+function reaper.ImGui_ConfigVar_DebugBeginReturnValueLoop() end
+
+---First-time calls to Begin()/BeginChild() will return false.
+---**Needs to be set at context startup time** if you don't want to miss windows.
+---@return integer retval
+function reaper.ImGui_ConfigVar_DebugBeginReturnValueOnce() end
+
+---Simplified docking mode: disable window splitting, so docking is limited to
+---   merging multiple windows together into tab-bars.
+---@return integer retval
+function reaper.ImGui_ConfigVar_DockingNoSplit() end
+
+---Make window or viewport transparent when docking and only display docking
+---   boxes on the target viewport.
+---@return integer retval
+function reaper.ImGui_ConfigVar_DockingTransparentPayload() end
+
+---Enable docking with holding Shift key
+---   (reduce visual noise, allows dropping in wider space
+---@return integer retval
+function reaper.ImGui_ConfigVar_DockingWithShift() end
+
+---Enable turning Drag* widgets into text input with a simple mouse
+---   click-release (without moving). Not desirable on devices without a keyboard.
+---@return integer retval
+function reaper.ImGui_ConfigVar_DragClickToInputText() end
+
+---ConfigFlags_*
+---@return integer retval
+function reaper.ImGui_ConfigVar_Flags() end
+
+---Delay on hovering before IsItemHovered(HoveredFlags_DelayNormal) returns true.
+---@return integer retval
+function reaper.ImGui_ConfigVar_HoverDelayNormal() end
+
+---Delay on hovering before IsItemHovered(HoveredFlags_DelayShort) returns true.
+---@return integer retval
+function reaper.ImGui_ConfigVar_HoverDelayShort() end
+
+---Enable blinking cursor (optional as some users consider it to be distracting).
+---@return integer retval
+function reaper.ImGui_ConfigVar_InputTextCursorBlink() end
+
+---Pressing Enter will keep item active and select contents (single-line only).
+---@return integer retval
+function reaper.ImGui_ConfigVar_InputTextEnterKeepActive() end
+
+---Enable input queue trickling: some types of events submitted during the same
+---   frame (e.g. button down + up) will be spread over multiple frames, improving
+---   interactions with low framerates.
+---@return integer retval
+function reaper.ImGui_ConfigVar_InputTrickleEventQueue() end
+
+---When holding a key/button, time before it starts repeating, in seconds
+---   (for buttons in Repeat mode, etc.).
+---@return integer retval
+function reaper.ImGui_ConfigVar_KeyRepeatDelay() end
+
+---When holding a key/button, rate at which it repeats, in seconds.
+---@return integer retval
+function reaper.ImGui_ConfigVar_KeyRepeatRate() end
+
+---OS X style: Text editing cursor movement using Alt instead of Ctrl, Shortcuts
+---   using Cmd/Super instead of Ctrl, Line/Text Start and End using Cmd+Arrows
+---   instead of Home/End, Double click selects by word instead of selecting whole
+---   text, Multi-selection in lists uses Cmd/Super instead of Ctrl.
+---@return integer retval
+function reaper.ImGui_ConfigVar_MacOSXBehaviors() end
+
+---Distance threshold to stay in to validate a double-click, in pixels.
+---@return integer retval
+function reaper.ImGui_ConfigVar_MouseDoubleClickMaxDist() end
+
+---Time for a double-click, in seconds.
+---@return integer retval
+function reaper.ImGui_ConfigVar_MouseDoubleClickTime() end
+
+---Distance threshold before considering we are dragging.
+---@return integer retval
+function reaper.ImGui_ConfigVar_MouseDragThreshold() end
+
+---Disable default OS window decoration. Enabling decoration can create
+---   subsequent issues at OS levels (e.g. minimum window size).
+---@return integer retval
+function reaper.ImGui_ConfigVar_ViewportsNoDecoration() end
+
+---Enable allowing to move windows only when clicking on their title bar.
+---   Does not apply to windows without a title bar.
+---@return integer retval
+function reaper.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly() end
+
+---Enable resizing of windows from their edges and from the lower-left corner.
+---@return integer retval
+function reaper.ImGui_ConfigVar_WindowsResizeFromEdges() end
+
+---Create a new ReaImGui context.
+---The context will remain valid as long as it is used in each defer cycle.The label is used for the tab text when windows are docked in REAPER
+---and also as a unique identifier for storing settings.
+---@param label string
+---@param config_flagsIn? integer
+---@return ImGui_Context 
+function reaper.ImGui_CreateContext(label, config_flagsIn) end
+
+---@param draw_list ImGui_DrawList
+---@return ImGui_DrawListSplitter 
+function reaper.ImGui_CreateDrawListSplitter(draw_list) end
+
+---Load a font matching a font family name or from a font file.
+---The font will remain valid while it's attached to a context. See Attach.The family name can be an installed font or one of the generic fonts:
+---sans-serif, serif, monospace, cursive, fantasy.If 'family_or_file' specifies a path to a font file (contains a / or \):
+---- The first byte of 'flags' is used as the font index within the file
+---- The font styles in 'flags' are simulated by the font renderer
+---@param family_or_file string
+---@param size integer
+---@param flagsIn? integer
+---@return ImGui_Font 
+function reaper.ImGui_CreateFont(family_or_file, size, flagsIn) end
+
+---Compile an EEL program.Standard EEL [math](https://www.reaper.fm/sdk/js/basiccode.php#js_basicfunc)
+---and [string](https://www.reaper.fm/sdk/js/strings.php#js_string_funcs)
+---functions are available in addition to callback-specific functions
+---(see InputTextCallback_*).
+---@param code string
+---@return ImGui_Function 
+function reaper.ImGui_CreateFunctionFromEEL(code) end
+
+---The returned object is valid as long as it is used in each defer cycle
+---unless attached to a context (see Attach).('flags' currently unused and reserved for future expansion)
+---@param file string
+---@param flagsIn? integer
+---@return ImGui_Image 
+function reaper.ImGui_CreateImage(file, flagsIn) end
+
+---Requires REAPER v6.44 or newer for EEL and Lua. Load from a file using
+---CreateImage or explicitely specify data_sz if supporting older versions.
+---@param data string
+---@return ImGui_Image 
+function reaper.ImGui_CreateImageFromMem(data) end
+
+---@return ImGui_ImageSet 
+function reaper.ImGui_CreateImageSet() end
+
+---The returned clipper object is only valid for the given context and is valid
+---as long as it is used in each defer cycle unless attached (see Attach).
+---@param ctx ImGui_Context
+---@return ImGui_ListClipper 
+function reaper.ImGui_CreateListClipper(ctx) end
+
+---Valid while used every frame unless attached to a context (see Attach).
+---@param default_filterIn? string
+---@return ImGui_TextFilter 
+function reaper.ImGui_CreateTextFilter(default_filterIn) end
+
+---Helper tool to diagnose between text encoding issues and font loading issues.
+---Pass your UTF-8 string and verify that there are correct.
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_DebugTextEncoding(ctx, text) end
+
+---Free the resources used by a context.Calling this function is usually not required as all ReaImGui objects are
+---automatically garbage-collected when unused.
+---@param ctx ImGui_Context
+function reaper.ImGui_DestroyContext(ctx) end
+
+---Unlink the object's lifetime. Unattached objects are automatically destroyed
+---when left unused. You may check whether an object has been destroyed using
+---ValidatePtr.
+---@param obj? ImGui_Context
+function reaper.ImGui_Detach(obj) end
+
+---@return integer retval
+function reaper.ImGui_Dir_Down() end
+
+---@return integer retval
+function reaper.ImGui_Dir_Left() end
+
+---@return integer retval
+function reaper.ImGui_Dir_None() end
+
+---@return integer retval
+function reaper.ImGui_Dir_Right() end
+
+---@return integer retval
+function reaper.ImGui_Dir_Up() end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v number
+---@param v_speedIn? number
+---@param v_minIn? number
+---@param v_maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v
+function reaper.ImGui_DragDouble(ctx, label, v, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v_speedIn? number
+---@param v_minIn? number
+---@param v_maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2
+function reaper.ImGui_DragDouble2(ctx, label, v1, v2, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param v_speedIn? number
+---@param v_minIn? number
+---@param v_maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3
+function reaper.ImGui_DragDouble3(ctx, label, v1, v2, v3, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param v4 number
+---@param v_speedIn? number
+---@param v_minIn? number
+---@param v_maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3, number v4
+function reaper.ImGui_DragDouble4(ctx, label, v1, v2, v3, v4, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param values? string
+---@param speedIn? number
+---@param minIn? number
+---@param maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_DragDoubleN(ctx, values, speedIn, minIn, maxIn, formatIn, flagsIn) end
+
+---AcceptDragDropPayload will returns true even before the mouse button is
+---   released. You can then check GetDragDropPayload/is_delivery to test if the
+---   payload needs to be delivered.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_AcceptBeforeDelivery() end
+
+---Do not draw the default highlight rectangle when hovering over target.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_AcceptNoDrawDefaultRect() end
+
+---Request hiding the BeginDragDropSource tooltip from the BeginDragDropTarget site.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_AcceptNoPreviewTooltip() end
+
+---For peeking ahead and inspecting the payload before delivery.
+---   Equivalent to DragDropFlags_AcceptBeforeDelivery |
+---   DragDropFlags_AcceptNoDrawDefaultRect.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_AcceptPeekOnly() end
+
+---@return integer retval
+function reaper.ImGui_DragDropFlags_None() end
+
+---Allow items such as Text, Image that have no unique identifier to be used as
+---   drag source, by manufacturing a temporary identifier based on their
+---   window-relative position. This is extremely unusual within the dear imgui
+---   ecosystem and so we made it explicit.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceAllowNullID() end
+
+---Automatically expire the payload if the source cease to be submitted
+---   (otherwise payloads are persisting while being dragged).
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceAutoExpirePayload() end
+
+---External source (from outside of dear imgui), won't attempt to read current
+---   item/window info. Will always return true.
+---   Only one Extern source can be active simultaneously.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceExtern() end
+
+---By default, when dragging we clear data so that IsItemHovered will return
+---   false, to avoid subsequent user code submitting tooltips. This flag disables
+---   this behavior so you can still call IsItemHovered on the source item.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceNoDisableHover() end
+
+---Disable the behavior that allows to open tree nodes and collapsing header by
+---   holding over them while dragging a source item.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceNoHoldToOpenOthers() end
+
+---By default, a successful call to BeginDragDropSource opens a tooltip so you
+---   can display a preview or description of the source contents.
+---   This flag disables this behavior.
+---@return integer retval
+function reaper.ImGui_DragDropFlags_SourceNoPreviewTooltip() end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v_current_min number
+---@param v_current_max number
+---@param v_speedIn? number
+---@param v_minIn? number
+---@param v_maxIn? number
+---@param formatIn? string
+---@param format_maxIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v_current_min, number v_current_max
+function reaper.ImGui_DragFloatRange2(ctx, label, v_current_min, v_current_max, v_speedIn, v_minIn, v_maxIn, formatIn, format_maxIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v integer
+---@param v_speedIn? number
+---@param v_minIn? integer
+---@param v_maxIn? integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v
+function reaper.ImGui_DragInt(ctx, label, v, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v_speedIn? number
+---@param v_minIn? integer
+---@param v_maxIn? integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2
+function reaper.ImGui_DragInt2(ctx, label, v1, v2, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param v_speedIn? number
+---@param v_minIn? integer
+---@param v_maxIn? integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3
+function reaper.ImGui_DragInt3(ctx, label, v1, v2, v3, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param v4 integer
+---@param v_speedIn? number
+---@param v_minIn? integer
+---@param v_maxIn? integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3, integer v4
+function reaper.ImGui_DragInt4(ctx, label, v1, v2, v3, v4, v_speedIn, v_minIn, v_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v_current_min integer
+---@param v_current_max integer
+---@param v_speedIn? number
+---@param v_minIn? integer
+---@param v_maxIn? integer
+---@param formatIn? string
+---@param format_maxIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v_current_min, integer v_current_max
+function reaper.ImGui_DragIntRange2(ctx, label, v_current_min, v_current_max, v_speedIn, v_minIn, v_maxIn, formatIn, format_maxIn, flagsIn) end
+
+---DrawList_PathStroke, DrawList_AddPolyline: specify that shape should be
+---   closed (Important: this is always == 1 for legacy reason).
+---@return integer retval
+function reaper.ImGui_DrawFlags_Closed() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_None() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersAll() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersBottom() end
+
+---DrawList_AddRect, DrawList_AddRectFilled, DrawList_PathRect: enable rounding
+---   bottom-left corner only (when rounding &gt; 0.0, we default to all corners).
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersBottomLeft() end
+
+---DrawList_AddRect, DrawList_AddRectFilled, DrawList_PathRect: enable rounding
+---   bottom-right corner only (when rounding &gt; 0.0, we default to all corners).
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersBottomRight() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersLeft() end
+
+---DrawList_AddRect, DrawList_AddRectFilled, DrawList_PathRect: disable rounding
+---   on all corners (when rounding &gt; 0.0). This is NOT zero, NOT an implicit flag!.
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersNone() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersRight() end
+
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersTop() end
+
+---DrawList_AddRect, DrawList_AddRectFilled, DrawList_PathRect: enable rounding
+---   top-left corner only (when rounding &gt; 0.0, we default to all corners).
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersTopLeft() end
+
+---DrawList_AddRect, DrawList_AddRectFilled, DrawList_PathRect: enable rounding
+---   top-right corner only (when rounding &gt; 0.0, we default to all corners).
+---@return integer retval
+function reaper.ImGui_DrawFlags_RoundCornersTopRight() end
+
+---@param splitter ImGui_DrawListSplitter
+function reaper.ImGui_DrawListSplitter_Clear(splitter) end
+
+---@param splitter ImGui_DrawListSplitter
+function reaper.ImGui_DrawListSplitter_Merge(splitter) end
+
+---@param splitter ImGui_DrawListSplitter
+---@param channel_idx integer
+function reaper.ImGui_DrawListSplitter_SetCurrentChannel(splitter, channel_idx) end
+
+---@param splitter ImGui_DrawListSplitter
+---@param count integer
+function reaper.ImGui_DrawListSplitter_Split(splitter, count) end
+
+---Cubic Bezier (4 control points)
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param p4_x number
+---@param p4_y number
+---@param col_rgba integer
+---@param thickness number
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_AddBezierCubic(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, col_rgba, thickness, num_segmentsIn) end
+
+---Quadratic Bezier (3 control points)
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param col_rgba integer
+---@param thickness number
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_AddBezierQuadratic(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col_rgba, thickness, num_segmentsIn) end
+
+---Use "num_segments == 0" to automatically calculate tessellation (preferred).
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param col_rgba integer
+---@param num_segmentsIn? integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddCircle(draw_list, center_x, center_y, radius, col_rgba, num_segmentsIn, thicknessIn) end
+
+---Use "num_segments == 0" to automatically calculate tessellation (preferred).
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param col_rgba integer
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_AddCircleFilled(draw_list, center_x, center_y, radius, col_rgba, num_segmentsIn) end
+
+---Note: Anti-aliased filling requires points to be in clockwise order.
+---@param points? ImGui_DrawList
+---@param col_rgba integer
+function reaper.ImGui_DrawList_AddConvexPolyFilled(points, col_rgba) end
+
+---@param img? ImGui_DrawList
+---@param p_min_x number
+---@param p_min_y number
+---@param p_max_x number
+---@param p_max_y number
+---@param uv_min_xIn? number
+---@param uv_min_yIn? number
+---@param uv_max_xIn? number
+---@param uv_max_yIn? number
+---@param col_rgbaIn? integer
+function reaper.ImGui_DrawList_AddImage(img, p_min_x, p_min_y, p_max_x, p_max_y, uv_min_xIn, uv_min_yIn, uv_max_xIn, uv_max_yIn, col_rgbaIn) end
+
+---@param img? ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param p4_x number
+---@param p4_y number
+---@param uv1_xIn? number
+---@param uv1_yIn? number
+---@param uv2_xIn? number
+---@param uv2_yIn? number
+---@param uv3_xIn? number
+---@param uv3_yIn? number
+---@param uv4_xIn? number
+---@param uv4_yIn? number
+---@param col_rgbaIn? integer
+function reaper.ImGui_DrawList_AddImageQuad(img, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, uv1_xIn, uv1_yIn, uv2_xIn, uv2_yIn, uv3_xIn, uv3_yIn, uv4_xIn, uv4_yIn, col_rgbaIn) end
+
+---@param img? ImGui_DrawList
+---@param p_min_x number
+---@param p_min_y number
+---@param p_max_x number
+---@param p_max_y number
+---@param uv_min_x number
+---@param uv_min_y number
+---@param uv_max_x number
+---@param uv_max_y number
+---@param col_rgba integer
+---@param rounding number
+---@param flagsIn? integer
+function reaper.ImGui_DrawList_AddImageRounded(img, p_min_x, p_min_y, p_max_x, p_max_y, uv_min_x, uv_min_y, uv_max_x, uv_max_y, col_rgba, rounding, flagsIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param col_rgba integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddLine(draw_list, p1_x, p1_y, p2_x, p2_y, col_rgba, thicknessIn) end
+
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param col_rgba integer
+---@param num_segments integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddNgon(draw_list, center_x, center_y, radius, col_rgba, num_segments, thicknessIn) end
+
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param col_rgba integer
+---@param num_segments integer
+function reaper.ImGui_DrawList_AddNgonFilled(draw_list, center_x, center_y, radius, col_rgba, num_segments) end
+
+---Points is a list of x,y coordinates.
+---@param points? ImGui_DrawList
+---@param col_rgba integer
+---@param flags integer
+---@param thickness number
+function reaper.ImGui_DrawList_AddPolyline(points, col_rgba, flags, thickness) end
+
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param p4_x number
+---@param p4_y number
+---@param col_rgba integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddQuad(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, col_rgba, thicknessIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param p4_x number
+---@param p4_y number
+---@param col_rgba integer
+function reaper.ImGui_DrawList_AddQuadFilled(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, col_rgba) end
+
+---@param draw_list ImGui_DrawList
+---@param p_min_x number
+---@param p_min_y number
+---@param p_max_x number
+---@param p_max_y number
+---@param col_rgba integer
+---@param roundingIn? number
+---@param flagsIn? integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddRect(draw_list, p_min_x, p_min_y, p_max_x, p_max_y, col_rgba, roundingIn, flagsIn, thicknessIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p_min_x number
+---@param p_min_y number
+---@param p_max_x number
+---@param p_max_y number
+---@param col_rgba integer
+---@param roundingIn? number
+---@param flagsIn? integer
+function reaper.ImGui_DrawList_AddRectFilled(draw_list, p_min_x, p_min_y, p_max_x, p_max_y, col_rgba, roundingIn, flagsIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p_min_x number
+---@param p_min_y number
+---@param p_max_x number
+---@param p_max_y number
+---@param col_upr_left integer
+---@param col_upr_right integer
+---@param col_bot_right integer
+---@param col_bot_left integer
+function reaper.ImGui_DrawList_AddRectFilledMultiColor(draw_list, p_min_x, p_min_y, p_max_x, p_max_y, col_upr_left, col_upr_right, col_bot_right, col_bot_left) end
+
+---@param draw_list ImGui_DrawList
+---@param x number
+---@param y number
+---@param col_rgba integer
+---@param text string
+function reaper.ImGui_DrawList_AddText(draw_list, x, y, col_rgba, text) end
+
+---The last pushed font is used if font is nil.
+---The size of the last pushed font is used if font_size is 0.
+---cpu_fine_clip_rect_* only takes effect if all four are non-nil.
+---@param font? ImGui_DrawList
+---@param font_size number
+---@param pos_x number
+---@param pos_y number
+---@param col_rgba integer
+---@param text string
+---@param wrap_widthIn? number
+---@param cpu_fine_clip_rect_xIn? number
+---@param cpu_fine_clip_rect_yIn? number
+---@param cpu_fine_clip_rect_wIn? number
+---@param cpu_fine_clip_rect_hIn? number
+function reaper.ImGui_DrawList_AddTextEx(font, font_size, pos_x, pos_y, col_rgba, text, wrap_widthIn, cpu_fine_clip_rect_xIn, cpu_fine_clip_rect_yIn, cpu_fine_clip_rect_wIn, cpu_fine_clip_rect_hIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param col_rgba integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_AddTriangle(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col_rgba, thicknessIn) end
+
+---@param draw_list ImGui_DrawList
+---@param p1_x number
+---@param p1_y number
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param col_rgba integer
+function reaper.ImGui_DrawList_AddTriangleFilled(draw_list, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col_rgba) end
+
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param a_min number
+---@param a_max number
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_PathArcTo(draw_list, center_x, center_y, radius, a_min, a_max, num_segmentsIn) end
+
+---Use precomputed angles for a 12 steps circle.
+---@param draw_list ImGui_DrawList
+---@param center_x number
+---@param center_y number
+---@param radius number
+---@param a_min_of_12 integer
+---@param a_max_of_12 integer
+function reaper.ImGui_DrawList_PathArcToFast(draw_list, center_x, center_y, radius, a_min_of_12, a_max_of_12) end
+
+---Cubic Bezier (4 control points)
+---@param draw_list ImGui_DrawList
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param p4_x number
+---@param p4_y number
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_PathBezierCubicCurveTo(draw_list, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, num_segmentsIn) end
+
+---Quadratic Bezier (3 control points)
+---@param draw_list ImGui_DrawList
+---@param p2_x number
+---@param p2_y number
+---@param p3_x number
+---@param p3_y number
+---@param num_segmentsIn? integer
+function reaper.ImGui_DrawList_PathBezierQuadraticCurveTo(draw_list, p2_x, p2_y, p3_x, p3_y, num_segmentsIn) end
+
+---@param draw_list ImGui_DrawList
+function reaper.ImGui_DrawList_PathClear(draw_list) end
+
+---Note: Anti-aliased filling requires points to be in clockwise order.
+---@param draw_list ImGui_DrawList
+---@param col_rgba integer
+function reaper.ImGui_DrawList_PathFillConvex(draw_list, col_rgba) end
+
+---@param draw_list ImGui_DrawList
+---@param pos_x number
+---@param pos_y number
+function reaper.ImGui_DrawList_PathLineTo(draw_list, pos_x, pos_y) end
+
+---@param draw_list ImGui_DrawList
+---@param rect_min_x number
+---@param rect_min_y number
+---@param rect_max_x number
+---@param rect_max_y number
+---@param roundingIn? number
+---@param flagsIn? integer
+function reaper.ImGui_DrawList_PathRect(draw_list, rect_min_x, rect_min_y, rect_max_x, rect_max_y, roundingIn, flagsIn) end
+
+---@param draw_list ImGui_DrawList
+---@param col_rgba integer
+---@param flagsIn? integer
+---@param thicknessIn? number
+function reaper.ImGui_DrawList_PathStroke(draw_list, col_rgba, flagsIn, thicknessIn) end
+
+---See DrawList_PushClipRect
+---@param draw_list ImGui_DrawList
+function reaper.ImGui_DrawList_PopClipRect(draw_list) end
+
+---Render-level scissoring. Prefer using higher-level PushClipRect to affect
+---logic (hit-testing and widget culling).
+---@param draw_list ImGui_DrawList
+---@param clip_rect_min_x number
+---@param clip_rect_min_y number
+---@param clip_rect_max_x number
+---@param clip_rect_max_y number
+---@param intersect_with_current_clip_rectIn? boolean
+function reaper.ImGui_DrawList_PushClipRect(draw_list, clip_rect_min_x, clip_rect_min_y, clip_rect_max_x, clip_rect_max_y, intersect_with_current_clip_rectIn) end
+
+---@param draw_list ImGui_DrawList
+function reaper.ImGui_DrawList_PushClipRectFullScreen(draw_list) end
+
+---Add a dummy item of given size. unlike InvisibleButton, Dummy() won't take the
+---mouse click or be navigable into.
+---@param ctx ImGui_Context
+---@param size_w number
+---@param size_h number
+function reaper.ImGui_Dummy(ctx, size_w, size_h) end
+
+---Pop window from the stack. See Begin.
+---@param ctx ImGui_Context
+function reaper.ImGui_End(ctx) end
+
+---See BeginChild.
+---@param ctx ImGui_Context
+function reaper.ImGui_EndChild(ctx) end
+
+---See BeginChildFrame.
+---@param ctx ImGui_Context
+function reaper.ImGui_EndChildFrame(ctx) end
+
+---Only call EndCombo() if BeginCombo returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndCombo(ctx) end
+
+---See BeginDisabled.
+---@param ctx ImGui_Context
+function reaper.ImGui_EndDisabled(ctx) end
+
+---Only call EndDragDropSource() if BeginDragDropSource returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndDragDropSource(ctx) end
+
+---Only call EndDragDropTarget() if BeginDragDropTarget returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndDragDropTarget(ctx) end
+
+---Unlock horizontal starting position + capture the whole group bounding box
+---into one "item" (so you can use IsItemHovered or layout primitives such as
+---SameLine on whole group, etc.).See BeginGroup.
+---@param ctx ImGui_Context
+function reaper.ImGui_EndGroup(ctx) end
+
+---Only call EndListBox() if BeginListBox returned true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndListBox(ctx) end
+
+---Only call EndMenu() if BeginMenu returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndMenu(ctx) end
+
+---Only call EndMenuBar if BeginMenuBar returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndMenuBar(ctx) end
+
+---Only call EndPopup() if BeginPopup*() returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndPopup(ctx) end
+
+---Only call EndTabBar() if BeginTabBar() returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndTabBar(ctx) end
+
+---Only call EndTabItem() if BeginTabItem() returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndTabItem(ctx) end
+
+---Only call EndTable() if BeginTable() returns true!
+---@param ctx ImGui_Context
+function reaper.ImGui_EndTable(ctx) end
+
+---Only call EndTooltip() if BeginTooltip() returns true.
+---@param ctx ImGui_Context
+function reaper.ImGui_EndTooltip(ctx) end
+
+---Return true if any window is focused.
+---@return integer retval
+function reaper.ImGui_FocusedFlags_AnyWindow() end
+
+---Return true if any children of the window is focused.
+---@return integer retval
+function reaper.ImGui_FocusedFlags_ChildWindows() end
+
+---Consider docking hierarchy (treat dockspace host as parent of docked window)
+---   (when used with _ChildWindows or _RootWindow).
+---@return integer retval
+function reaper.ImGui_FocusedFlags_DockHierarchy() end
+
+---Do not consider popup hierarchy (do not treat popup emitter as parent of
+---   popup) (when used with _ChildWindows or _RootWindow).
+---@return integer retval
+function reaper.ImGui_FocusedFlags_NoPopupHierarchy() end
+
+---@return integer retval
+function reaper.ImGui_FocusedFlags_None() end
+
+---FocusedFlags_RootWindow | FocusedFlags_ChildWindows
+---@return integer retval
+function reaper.ImGui_FocusedFlags_RootAndChildWindows() end
+
+---Test from root window (top most parent of the current hierarchy).
+---@return integer retval
+function reaper.ImGui_FocusedFlags_RootWindow() end
+
+---@return integer retval
+function reaper.ImGui_FontFlags_Bold() end
+
+---@return integer retval
+function reaper.ImGui_FontFlags_Italic() end
+
+---@return integer retval
+function reaper.ImGui_FontFlags_None() end
+
+---@param func ImGui_Function
+function reaper.ImGui_Function_Execute(func) end
+
+---@param func ImGui_Function
+---@param name string
+---@return number retval
+function reaper.ImGui_Function_GetValue(func, name) end
+
+---Copy the values in the function's memory starting at the address stored
+---in the given variable into the array.
+---@param func ImGui_Function
+---@param values? string
+function reaper.ImGui_Function_GetValue_Array(func, values) end
+
+---Read from a string slot or a named string (when name starts with a `#`).
+---@param func ImGui_Function
+---@param name string
+---@return string value
+function reaper.ImGui_Function_GetValue_String(func, name) end
+
+---@param func ImGui_Function
+---@param name string
+---@param value number
+function reaper.ImGui_Function_SetValue(func, name, value) end
+
+---Copy the values in the array to the function's memory at the address stored
+---in the given variable.
+---@param func ImGui_Function
+---@param values? string
+function reaper.ImGui_Function_SetValue_Array(func, values) end
+
+---Write to a string slot or a named string (when name starts with a `#`).
+---@param func ImGui_Function
+---@param name string
+---@param value string
+function reaper.ImGui_Function_SetValue_String(func, name, value) end
+
+---This draw list will be the first rendering one. Useful to quickly draw
+---shapes/text behind dear imgui contents.
+---@param ctx ImGui_Context
+---@return ImGui_DrawList 
+function reaper.ImGui_GetBackgroundDrawList(ctx) end
+
+---@param ctx ImGui_Context
+---@return string retval
+function reaper.ImGui_GetClipboardText(ctx) end
+
+---Retrieve given style color with style alpha applied and optional extra alpha
+---multiplier, packed as a 32-bit value (RGBA). See Col_* for available style colors.
+---@param ctx ImGui_Context
+---@param idx integer
+---@param alpha_mulIn? number
+---@return integer retval
+function reaper.ImGui_GetColor(ctx, idx, alpha_mulIn) end
+
+---Retrieve given color with style alpha applied, packed as a 32-bit value (RGBA).
+---@param ctx ImGui_Context
+---@param col_rgba integer
+---@return integer retval
+function reaper.ImGui_GetColorEx(ctx, col_rgba) end
+
+---@param ctx ImGui_Context
+---@param var_idx integer
+---@return number retval
+function reaper.ImGui_GetConfigVar(ctx, var_idx) end
+
+---== GetContentRegionMax() - GetCursorPos()
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetContentRegionAvail(ctx) end
+
+---Current content boundaries (typically window boundaries including scrolling,
+---or current column boundaries), in windows coordinates.
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetContentRegionMax(ctx) end
+
+---Cursor position in window
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetCursorPos(ctx) end
+
+---Cursor X position in window
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetCursorPosX(ctx) end
+
+---Cursor Y position in window
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetCursorPosY(ctx) end
+
+---Cursor position in absolute screen coordinates (useful to work with the DrawList API).
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetCursorScreenPos(ctx) end
+
+---Initial cursor position in window coordinates.
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetCursorStartPos(ctx) end
+
+---Time elapsed since last frame, in seconds.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetDeltaTime(ctx) end
+
+---Peek directly into the current payload from anywhere.
+---@param ctx ImGui_Context
+---@return boolean retval, string type, string payload, boolean is_preview, boolean is_delivery
+function reaper.ImGui_GetDragDropPayload(ctx) end
+
+---Get a filename from the list of dropped files.
+---Returns false if index is out of bounds.
+---@param ctx ImGui_Context
+---@param index integer
+---@return boolean retval, string filename
+function reaper.ImGui_GetDragDropPayloadFile(ctx, index) end
+
+---Get the current font
+---@param ctx ImGui_Context
+---@return ImGui_Font 
+function reaper.ImGui_GetFont(ctx) end
+
+---Get current font size (= height in pixels) of current font with current scale
+---applied.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetFontSize(ctx) end
+
+---This draw list will be the last rendered one. Useful to quickly draw
+---shapes/text over dear imgui contents.
+---@param ctx ImGui_Context
+---@return ImGui_DrawList 
+function reaper.ImGui_GetForegroundDrawList(ctx) end
+
+---Get global imgui frame count. incremented by 1 every frame.
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_GetFrameCount(ctx) end
+
+---GetFontSize + StyleVar_FramePadding.y * 2
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetFrameHeight(ctx) end
+
+---GetFontSize + StyleVar_FramePadding.y * 2 + StyleVar_ItemSpacing.y
+---(distance in pixels between 2 consecutive lines of framed widgets).
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetFrameHeightWithSpacing(ctx) end
+
+---Estimate of application framerate (rolling average over 60 frames, based on
+---GetDeltaTime), in frame per second. Solely for convenience.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetFramerate(ctx) end
+
+---Read from ImGui's character input queue.
+---Call with increasing idx until false is returned.
+---@param ctx ImGui_Context
+---@param idx integer
+---@return boolean retval, integer unicode_char
+function reaper.ImGui_GetInputQueueCharacter(ctx, idx) end
+
+---Get lower-right bounding rectangle of the last item (screen space)
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetItemRectMax(ctx) end
+
+---Get upper-left bounding rectangle of the last item (screen space)
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetItemRectMin(ctx) end
+
+---Get size of last item
+---@param ctx ImGui_Context
+---@return number w, number h
+function reaper.ImGui_GetItemRectSize(ctx) end
+
+---Duration the keyboard key has been down (0.0 == just pressed)
+---@param ctx ImGui_Context
+---@param key integer
+---@return number retval
+function reaper.ImGui_GetKeyDownDuration(ctx, key) end
+
+---Flags for the Ctrl/Shift/Alt/Super keys. Uses Mod_* values.
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_GetKeyMods(ctx) end
+
+---Uses provided repeat rate/delay. Return a count, most often 0 or 1 but might
+---be &gt;1 if ConfigVar_RepeatRate is small enough that GetDeltaTime &gt; RepeatRate.
+---@param ctx ImGui_Context
+---@param key integer
+---@param repeat_delay number
+---@param rate number
+---@return integer retval
+function reaper.ImGui_GetKeyPressedAmount(ctx, key, repeat_delay, rate) end
+
+---Currently represents REAPER's main window (arrange view).
+---WARNING: This may change or be removed in the future.
+---@param ctx ImGui_Context
+---@return ImGui_Viewport 
+function reaper.ImGui_GetMainViewport(ctx) end
+
+---Return the number of successive mouse-clicks at the time where a click happen (otherwise 0).
+---@param ctx ImGui_Context
+---@param button integer
+---@return integer retval
+function reaper.ImGui_GetMouseClickedCount(ctx, button) end
+
+---@param ctx ImGui_Context
+---@param button integer
+---@return number x, number y
+function reaper.ImGui_GetMouseClickedPos(ctx, button) end
+
+---Get desired mouse cursor shape, reset every frame. This is updated during the frame.
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_GetMouseCursor(ctx) end
+
+---Mouse delta. Note that this is zero if either current or previous position
+---are invalid (-FLT_MAX,-FLT_MAX), so a disappearing/reappearing mouse won't have
+---a huge delta.
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetMouseDelta(ctx) end
+
+---Duration the mouse button has been down (0.0 == just clicked)
+---@param ctx ImGui_Context
+---@param button integer
+---@return number retval
+function reaper.ImGui_GetMouseDownDuration(ctx, button) end
+
+---Return the delta from the initial clicking position while the mouse button is
+---pressed or was just released. This is locked and return 0.0 until the mouse
+---moves past a distance threshold at least once (if lock_threshold &lt; -1.0, uses
+---ConfigVar_MouseDragThreshold).
+---@param ctx ImGui_Context
+---@param x number
+---@param y number
+---@param buttonIn? integer
+---@param lock_thresholdIn? number
+---@return number x, number y
+function reaper.ImGui_GetMouseDragDelta(ctx, x, y, buttonIn, lock_thresholdIn) end
+
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetMousePos(ctx) end
+
+---Retrieve mouse position at the time of opening popup we have BeginPopup()
+---into (helper to avoid user backing that value themselves).
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetMousePosOnOpeningCurrentPopup(ctx) end
+
+---Vertical: 1 unit scrolls about 5 lines text. &gt;0 scrolls Up, &lt;0 scrolls Down.
+---Hold SHIFT to turn vertical scroll into horizontal scrollHorizontal: &gt;0 scrolls Left, &lt;0 scrolls Right.
+---Most users don't have a mouse with a horizontal wheel.
+---@param ctx ImGui_Context
+---@return number vertical, number horizontal
+function reaper.ImGui_GetMouseWheel(ctx) end
+
+---Get maximum scrolling amount ~~ ContentSize.x - WindowSize.x - DecorationsSize.x
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetScrollMaxX(ctx) end
+
+---Get maximum scrolling amount ~~ ContentSize.y - WindowSize.y - DecorationsSize.y
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetScrollMaxY(ctx) end
+
+---Get scrolling amount [0 .. GetScrollMaxX()]
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetScrollX(ctx) end
+
+---Get scrolling amount [0 .. GetScrollMaxY()]
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetScrollY(ctx) end
+
+---Retrieve style color as stored in ImGuiStyle structure.
+---Use to feed back into PushStyleColor, Otherwise use GetColor to get style color
+---with style alpha baked in. See Col_* for available style colors.
+---@param ctx ImGui_Context
+---@param idx integer
+---@return integer retval
+function reaper.ImGui_GetStyleColor(ctx, idx) end
+
+---@param ctx ImGui_Context
+---@param var_idx integer
+---@return number val1, number val2
+function reaper.ImGui_GetStyleVar(ctx, var_idx) end
+
+---Same as GetFontSize
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetTextLineHeight(ctx) end
+
+---GetFontSize + StyleVar_ItemSpacing.y
+---(distance in pixels between 2 consecutive lines of text).
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetTextLineHeightWithSpacing(ctx) end
+
+---Get global imgui time. Incremented every frame.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetTime(ctx) end
+
+---Horizontal distance preceding label when using TreeNode*() or Bullet()
+---== (GetFontSize + StyleVar_FramePadding.x*2) for a regular unframed TreeNode.
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetTreeNodeToLabelSpacing(ctx) end
+
+---@return string imgui_version, integer imgui_version_num, string reaimgui_version
+function reaper.ImGui_GetVersion() end
+
+---Content boundaries max (roughly (0,0)+Size-Scroll) where Size can be
+---overridden with SetNextWindowContentSize, in window coordinates.
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetWindowContentRegionMax(ctx) end
+
+---Content boundaries min (roughly (0,0)-Scroll), in window coordinates.
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetWindowContentRegionMin(ctx) end
+
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_GetWindowDockID(ctx) end
+
+---Get DPI scale currently associated to the current window's viewport
+---(1.0 = 96 DPI).
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetWindowDpiScale(ctx) end
+
+---The draw list associated to the current window, to append your own drawing primitives
+---@param ctx ImGui_Context
+---@return ImGui_DrawList 
+function reaper.ImGui_GetWindowDrawList(ctx) end
+
+---Get current window height (shortcut for (select(2, GetWindowSize())).
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetWindowHeight(ctx) end
+
+---Get current window position in screen space (useful if you want to do your own
+---drawing via the DrawList API).
+---@param ctx ImGui_Context
+---@return number x, number y
+function reaper.ImGui_GetWindowPos(ctx) end
+
+---Get current window size
+---@param ctx ImGui_Context
+---@return number w, number h
+function reaper.ImGui_GetWindowSize(ctx) end
+
+---Get viewport currently associated to the current window.
+---@param ctx ImGui_Context
+---@return ImGui_Viewport 
+function reaper.ImGui_GetWindowViewport(ctx) end
+
+---Get current window width (shortcut for (select(1, GetWindowSize())).
+---@param ctx ImGui_Context
+---@return number retval
+function reaper.ImGui_GetWindowWidth(ctx) end
+
+---Return true even if an active item is blocking access to this item/window.
+---  Useful for Drag and Drop patterns.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem() end
+
+---Return true even if a popup window is normally blocking access to this item/window.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_AllowWhenBlockedByPopup() end
+
+---IsItemHovered only: Return true even if the item is disabled.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_AllowWhenDisabled() end
+
+---IsItemHovered only: Return true even if the position is obstructed or
+---  overlapped by another window.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_AllowWhenOverlapped() end
+
+---IsWindowHovered only: Return true if any window is hovered.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_AnyWindow() end
+
+---IsWindowHovered only: Return true if any children of the window is hovered.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_ChildWindows() end
+
+---Return true after ConfigVar_HoverDelayNormal elapsed (~0.30 sec)
+---@return integer retval
+function reaper.ImGui_HoveredFlags_DelayNormal() end
+
+---Return true after ConfigVar_HoverDelayShort elapsed (~0.10 sec)
+---@return integer retval
+function reaper.ImGui_HoveredFlags_DelayShort() end
+
+---IsWindowHovered only: Consider docking hierarchy (treat dockspace host as
+---  parent of docked window) (when used with _ChildWindows or _RootWindow).
+---@return integer retval
+function reaper.ImGui_HoveredFlags_DockHierarchy() end
+
+---Disable using gamepad/keyboard navigation state when active, always query mouse.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_NoNavOverride() end
+
+---IsWindowHovered only: Do not consider popup hierarchy (do not treat popup
+---  emitter as parent of popup) (when used with _ChildWindows or _RootWindow).
+---@return integer retval
+function reaper.ImGui_HoveredFlags_NoPopupHierarchy() end
+
+---Disable shared delay system where moving from one item to the next keeps
+---  the previous timer for a short time (standard for tooltips with long delays
+---@return integer retval
+function reaper.ImGui_HoveredFlags_NoSharedDelay() end
+
+---Return true if directly over the item/window, not obstructed by another
+---  window, not obstructed by an active popup or modal blocking inputs under them.
+---@return integer retval
+function reaper.ImGui_HoveredFlags_None() end
+
+---HoveredFlags_AllowWhenBlockedByPopup |
+---  HoveredFlags_AllowWhenBlockedByActiveItem | HoveredFlags_AllowWhenOverlapped
+---@return integer retval
+function reaper.ImGui_HoveredFlags_RectOnly() end
+
+---HoveredFlags_RootWindow | HoveredFlags_ChildWindows
+---@return integer retval
+function reaper.ImGui_HoveredFlags_RootAndChildWindows() end
+
+---IsWindowHovered only: Test from root window (top most parent of the current hierarchy).
+---@return integer retval
+function reaper.ImGui_HoveredFlags_RootWindow() end
+
+---@param img? ImGui_Context
+---@param size_w number
+---@param size_h number
+---@param uv0_xIn? number
+---@param uv0_yIn? number
+---@param uv1_xIn? number
+---@param uv1_yIn? number
+---@param tint_col_rgbaIn? integer
+---@param border_col_rgbaIn? integer
+function reaper.ImGui_Image(img, size_w, size_h, uv0_xIn, uv0_yIn, uv1_xIn, uv1_yIn, tint_col_rgbaIn, border_col_rgbaIn) end
+
+---@param ctx ImGui_Context
+---@param img? string
+---@param size_w number
+---@param size_h number
+---@param uv0_xIn? number
+---@param uv0_yIn? number
+---@param uv1_xIn? number
+---@param uv1_yIn? number
+---@param bg_col_rgbaIn? integer
+---@param tint_col_rgbaIn? integer
+---@return boolean 
+function reaper.ImGui_ImageButton(ctx, img, size_w, size_h, uv0_xIn, uv0_yIn, uv1_xIn, uv1_yIn, bg_col_rgbaIn, tint_col_rgbaIn) end
+
+---'img' cannot be another ImageSet.
+---@param set ImGui_ImageSet
+---@param img? number
+function reaper.ImGui_ImageSet_Add(set, img) end
+
+---@param img ImGui_Image
+---@return number w, number h
+function reaper.ImGui_Image_GetSize(img) end
+
+---Move content position toward the right, by 'indent_w', or
+---StyleVar_IndentSpacing if 'indent_w' &lt;= 0. See Unindent.
+---@param ctx ImGui_Context
+---@param indent_wIn? number
+function reaper.ImGui_Indent(ctx, indent_wIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v number
+---@param stepIn? number
+---@param step_fastIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v
+function reaper.ImGui_InputDouble(ctx, label, v, stepIn, step_fastIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2
+function reaper.ImGui_InputDouble2(ctx, label, v1, v2, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3
+function reaper.ImGui_InputDouble3(ctx, label, v1, v2, v3, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param v4 number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3, number v4
+function reaper.ImGui_InputDouble4(ctx, label, v1, v2, v3, v4, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param values? string
+---@param stepIn? number
+---@param step_fastIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_InputDoubleN(ctx, values, stepIn, step_fastIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v integer
+---@param stepIn? integer
+---@param step_fastIn? integer
+---@param flagsIn? integer
+---@return boolean retval, integer v
+function reaper.ImGui_InputInt(ctx, label, v, stepIn, step_fastIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2
+function reaper.ImGui_InputInt2(ctx, label, v1, v2, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3
+function reaper.ImGui_InputInt3(ctx, label, v1, v2, v3, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param v4 integer
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3, integer v4
+function reaper.ImGui_InputInt4(ctx, label, v1, v2, v3, v4, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param buf string
+---@param callbackIn? integer
+---@return boolean retval, string buf
+function reaper.ImGui_InputText(ctx, label, buf, callbackIn) end
+
+---Pressing TAB input a '\t' character into the text field.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_AllowTabInput() end
+
+---Overwrite mode.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_AlwaysOverwrite() end
+
+---Select entire text when first taking mouse focus.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_AutoSelectAll() end
+
+---Callback on each iteration. User code may query cursor position, modify text buffer.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CallbackAlways() end
+
+---Callback on character inputs to replace or discard them.
+---   Modify 'EventChar' to replace or 'EventChar = 0' to discard.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CallbackCharFilter() end
+
+---Callback on pressing TAB (for completion handling).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CallbackCompletion() end
+
+---Callback on any edit (note that InputText() already returns true on edit,
+---   the callback is useful mainly to manipulate the underlying buffer while
+---   focus is active).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CallbackEdit() end
+
+---Callback on pressing Up/Down arrows (for history handling).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CallbackHistory() end
+
+---Allow 0123456789.+-*/.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CharsDecimal() end
+
+---Allow 0123456789ABCDEFabcdef.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CharsHexadecimal() end
+
+---Filter out spaces, tabs.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CharsNoBlank() end
+
+---Allow 0123456789.+-*/eE (Scientific notation input).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CharsScientific() end
+
+---Turn a..z into A..Z.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CharsUppercase() end
+
+---In multi-line mode, unfocus with Enter, add new line with Ctrl+Enter
+---   (default is opposite: unfocus with Ctrl+Enter, add line with Enter).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_CtrlEnterForNewLine() end
+
+---Return 'true' when Enter is pressed (as opposed to every time the value was
+---   modified). Consider looking at the IsItemDeactivatedAfterEdit function.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_EnterReturnsTrue() end
+
+---Escape key clears content if not empty, and deactivate otherwise
+---   (constrast to default behavior of Escape to revert).
+---@return integer retval
+function reaper.ImGui_InputTextFlags_EscapeClearsAll() end
+
+---Disable following the cursor horizontally.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_NoHorizontalScroll() end
+
+---Disable undo/redo. Note that input text owns the text data while active.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_NoUndoRedo() end
+
+---@return integer retval
+function reaper.ImGui_InputTextFlags_None() end
+
+---Password mode, display all characters as '*'.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_Password() end
+
+---Read-only mode.
+---@return integer retval
+function reaper.ImGui_InputTextFlags_ReadOnly() end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param buf string
+---@param size_wIn? number
+---@param size_hIn? number
+---@param callbackIn? integer
+---@return boolean retval, string buf
+function reaper.ImGui_InputTextMultiline(ctx, label, buf, size_wIn, size_hIn, callbackIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param hint string
+---@param buf string
+---@param callbackIn? integer
+---@return boolean retval, string buf
+function reaper.ImGui_InputTextWithHint(ctx, label, hint, buf, callbackIn) end
+
+---Flexible button behavior without the visuals, frequently useful to build
+---custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.).
+---@param ctx ImGui_Context
+---@param str_id string
+---@param size_w number
+---@param size_h number
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_InvisibleButton(ctx, str_id, size_w, size_h, flagsIn) end
+
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsAnyItemActive(ctx) end
+
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsAnyItemFocused(ctx) end
+
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsAnyItemHovered(ctx) end
+
+---Is any mouse button held?
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsAnyMouseDown(ctx) end
+
+---Was the last item just made active (item was previously inactive).
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemActivated(ctx) end
+
+---Is the last item active? (e.g. button being held, text field being edited.
+---This will continuously return true while holding mouse button on an item.
+---Items that don't interact will always return false.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemActive(ctx) end
+
+---Is the last item clicked? (e.g. button/node just clicked on)
+---== IsMouseClicked(mouse_button) &amp;&amp; IsItemHovered().This is NOT equivalent to the behavior of e.g. Button.
+---Most widgets have specific reactions based on mouse-up/down state, mouse position etc.
+---@param ctx ImGui_Context
+---@param mouse_buttonIn? integer
+---@return boolean 
+function reaper.ImGui_IsItemClicked(ctx, mouse_buttonIn) end
+
+---Was the last item just made inactive (item was previously active).
+---Useful for Undo/Redo patterns with widgets that require continuous editing.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemDeactivated(ctx) end
+
+---Was the last item just made inactive and made a value change when it was
+---active? (e.g. Slider/Drag moved).Useful for Undo/Redo patterns with widgets that require continuous editing. Note
+---that you may get false positives (some widgets such as Combo/ListBox/Selectable
+---will return true even when clicking an already selected item).
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemDeactivatedAfterEdit(ctx) end
+
+---Did the last item modify its underlying value this frame? or was pressed?
+---This is generally the same as the "bool" return value of many widgets.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemEdited(ctx) end
+
+---Is the last item focused for keyboard/gamepad navigation?
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemFocused(ctx) end
+
+---Is the last item hovered? (and usable, aka not blocked by a popup, etc.).
+---See HoveredFlags_* for more options.
+---@param ctx ImGui_Context
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_IsItemHovered(ctx, flagsIn) end
+
+---Was the last item open state toggled? Set by TreeNode.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemToggledOpen(ctx) end
+
+---Is the last item visible? (items may be out of sight because of clipping/scrolling)
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsItemVisible(ctx) end
+
+---Is key being held.
+---@param ctx ImGui_Context
+---@param key integer
+---@return boolean 
+function reaper.ImGui_IsKeyDown(ctx, key) end
+
+---Was key pressed (went from !Down to Down)?
+---If repeat=true, uses ConfigVar_KeyRepeatDelay / ConfigVar_KeyRepeatRate.
+---@param ctx ImGui_Context
+---@param key integer
+---@param repeatIn? boolean
+---@return boolean 
+function reaper.ImGui_IsKeyPressed(ctx, key, repeatIn) end
+
+---Was key released (went from Down to !Down)?
+---@param ctx ImGui_Context
+---@param key integer
+---@return boolean 
+function reaper.ImGui_IsKeyReleased(ctx, key) end
+
+---Did mouse button clicked? (went from !Down to Down).
+---Same as GetMouseClickedCount() == 1.
+---@param ctx ImGui_Context
+---@param button integer
+---@param repeatIn? boolean
+---@return boolean 
+function reaper.ImGui_IsMouseClicked(ctx, button, repeatIn) end
+
+---Did mouse button double-clicked? Same as GetMouseClickedCount() == 2.
+---(Note that a double-click will also report IsMouseClicked() == true)
+---@param ctx ImGui_Context
+---@param button integer
+---@return boolean 
+function reaper.ImGui_IsMouseDoubleClicked(ctx, button) end
+
+---Is mouse button held?
+---@param ctx ImGui_Context
+---@param button integer
+---@return boolean 
+function reaper.ImGui_IsMouseDown(ctx, button) end
+
+---Is mouse dragging? (if lock_threshold &lt; -1.0, uses ConfigVar_MouseDragThreshold)
+---@param ctx ImGui_Context
+---@param button integer
+---@param lock_thresholdIn? number
+---@return boolean 
+function reaper.ImGui_IsMouseDragging(ctx, button, lock_thresholdIn) end
+
+---Is mouse hovering given bounding rect (in screen space).
+---Clipped by current clipping settings, but disregarding of other consideration
+---of focus/window ordering/popup-block.
+---@param ctx ImGui_Context
+---@param r_min_x number
+---@param r_min_y number
+---@param r_max_x number
+---@param r_max_y number
+---@param clipIn? boolean
+---@return boolean 
+function reaper.ImGui_IsMouseHoveringRect(ctx, r_min_x, r_min_y, r_max_x, r_max_y, clipIn) end
+
+---@param ctx ImGui_Context
+---@param mouse_pos_xIn? number
+---@param mouse_pos_yIn? number
+---@return boolean 
+function reaper.ImGui_IsMousePosValid(ctx, mouse_pos_xIn, mouse_pos_yIn) end
+
+---Did mouse button released? (went from Down to !Down)
+---@param ctx ImGui_Context
+---@param button integer
+---@return boolean 
+function reaper.ImGui_IsMouseReleased(ctx, button) end
+
+---Return true if the popup is open at the current BeginPopup level of the
+---popup stack.- With PopupFlags_AnyPopupId: return true if any popup is open at the current
+---  BeginPopup() level of the popup stack.
+---- With PopupFlags_AnyPopupId + PopupFlags_AnyPopupLevel: return true if any
+---  popup is open.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_IsPopupOpen(ctx, str_id, flagsIn) end
+
+---Test if rectangle (of given size, starting from cursor position) is
+---visible / not clipped.
+---@param ctx ImGui_Context
+---@param size_w number
+---@param size_h number
+---@return boolean 
+function reaper.ImGui_IsRectVisible(ctx, size_w, size_h) end
+
+---Test if rectangle (in screen space) is visible / not clipped. to perform
+---coarse clipping on user's side.
+---@param ctx ImGui_Context
+---@param rect_min_x number
+---@param rect_min_y number
+---@param rect_max_x number
+---@param rect_max_y number
+---@return boolean 
+function reaper.ImGui_IsRectVisibleEx(ctx, rect_min_x, rect_min_y, rect_max_x, rect_max_y) end
+
+---Use after Begin/BeginPopup/BeginPopupModal to tell if a window just opened.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsWindowAppearing(ctx) end
+
+---Is current window docked into another window or a REAPER docker?
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_IsWindowDocked(ctx) end
+
+---Is current window focused? or its root/child, depending on flags.
+---See flags for options.
+---@param ctx ImGui_Context
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_IsWindowFocused(ctx, flagsIn) end
+
+---Is current window hovered (and typically: not blocked by a popup/modal)?
+---See flags for options.
+---@param ctx ImGui_Context
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_IsWindowHovered(ctx, flagsIn) end
+
+---@return integer retval
+function reaper.ImGui_Key_0() end
+
+---@return integer retval
+function reaper.ImGui_Key_1() end
+
+---@return integer retval
+function reaper.ImGui_Key_2() end
+
+---@return integer retval
+function reaper.ImGui_Key_3() end
+
+---@return integer retval
+function reaper.ImGui_Key_4() end
+
+---@return integer retval
+function reaper.ImGui_Key_5() end
+
+---@return integer retval
+function reaper.ImGui_Key_6() end
+
+---@return integer retval
+function reaper.ImGui_Key_7() end
+
+---@return integer retval
+function reaper.ImGui_Key_8() end
+
+---@return integer retval
+function reaper.ImGui_Key_9() end
+
+---@return integer retval
+function reaper.ImGui_Key_A() end
+
+---'
+---@return integer retval
+function reaper.ImGui_Key_Apostrophe() end
+
+---@return integer retval
+function reaper.ImGui_Key_B() end
+
+---\
+---@return integer retval
+function reaper.ImGui_Key_Backslash() end
+
+---@return integer retval
+function reaper.ImGui_Key_Backspace() end
+
+---@return integer retval
+function reaper.ImGui_Key_C() end
+
+---@return integer retval
+function reaper.ImGui_Key_CapsLock() end
+
+---,
+---@return integer retval
+function reaper.ImGui_Key_Comma() end
+
+---@return integer retval
+function reaper.ImGui_Key_D() end
+
+---@return integer retval
+function reaper.ImGui_Key_Delete() end
+
+---@return integer retval
+function reaper.ImGui_Key_DownArrow() end
+
+---@return integer retval
+function reaper.ImGui_Key_E() end
+
+---@return integer retval
+function reaper.ImGui_Key_End() end
+
+---@return integer retval
+function reaper.ImGui_Key_Enter() end
+
+---=
+---@return integer retval
+function reaper.ImGui_Key_Equal() end
+
+---@return integer retval
+function reaper.ImGui_Key_Escape() end
+
+---@return integer retval
+function reaper.ImGui_Key_F() end
+
+---@return integer retval
+function reaper.ImGui_Key_F1() end
+
+---@return integer retval
+function reaper.ImGui_Key_F10() end
+
+---@return integer retval
+function reaper.ImGui_Key_F11() end
+
+---@return integer retval
+function reaper.ImGui_Key_F12() end
+
+---@return integer retval
+function reaper.ImGui_Key_F2() end
+
+---@return integer retval
+function reaper.ImGui_Key_F3() end
+
+---@return integer retval
+function reaper.ImGui_Key_F4() end
+
+---@return integer retval
+function reaper.ImGui_Key_F5() end
+
+---@return integer retval
+function reaper.ImGui_Key_F6() end
+
+---@return integer retval
+function reaper.ImGui_Key_F7() end
+
+---@return integer retval
+function reaper.ImGui_Key_F8() end
+
+---@return integer retval
+function reaper.ImGui_Key_F9() end
+
+---@return integer retval
+function reaper.ImGui_Key_G() end
+
+---`
+---@return integer retval
+function reaper.ImGui_Key_GraveAccent() end
+
+---@return integer retval
+function reaper.ImGui_Key_H() end
+
+---@return integer retval
+function reaper.ImGui_Key_Home() end
+
+---@return integer retval
+function reaper.ImGui_Key_I() end
+
+---@return integer retval
+function reaper.ImGui_Key_Insert() end
+
+---@return integer retval
+function reaper.ImGui_Key_J() end
+
+---@return integer retval
+function reaper.ImGui_Key_K() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad0() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad1() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad2() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad3() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad4() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad5() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad6() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad7() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad8() end
+
+---@return integer retval
+function reaper.ImGui_Key_Keypad9() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadAdd() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadDecimal() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadDivide() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadEnter() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadEqual() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadMultiply() end
+
+---@return integer retval
+function reaper.ImGui_Key_KeypadSubtract() end
+
+---@return integer retval
+function reaper.ImGui_Key_L() end
+
+---@return integer retval
+function reaper.ImGui_Key_LeftAlt() end
+
+---@return integer retval
+function reaper.ImGui_Key_LeftArrow() end
+
+---[
+---@return integer retval
+function reaper.ImGui_Key_LeftBracket() end
+
+---@return integer retval
+function reaper.ImGui_Key_LeftCtrl() end
+
+---@return integer retval
+function reaper.ImGui_Key_LeftShift() end
+
+---@return integer retval
+function reaper.ImGui_Key_LeftSuper() end
+
+---@return integer retval
+function reaper.ImGui_Key_M() end
+
+---@return integer retval
+function reaper.ImGui_Key_Menu() end
+
+----
+---@return integer retval
+function reaper.ImGui_Key_Minus() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseLeft() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseMiddle() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseRight() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseWheelX() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseWheelY() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseX1() end
+
+---@return integer retval
+function reaper.ImGui_Key_MouseX2() end
+
+---@return integer retval
+function reaper.ImGui_Key_N() end
+
+---@return integer retval
+function reaper.ImGui_Key_NumLock() end
+
+---@return integer retval
+function reaper.ImGui_Key_O() end
+
+---@return integer retval
+function reaper.ImGui_Key_P() end
+
+---@return integer retval
+function reaper.ImGui_Key_PageDown() end
+
+---@return integer retval
+function reaper.ImGui_Key_PageUp() end
+
+---@return integer retval
+function reaper.ImGui_Key_Pause() end
+
+---.
+---@return integer retval
+function reaper.ImGui_Key_Period() end
+
+---@return integer retval
+function reaper.ImGui_Key_PrintScreen() end
+
+---@return integer retval
+function reaper.ImGui_Key_Q() end
+
+---@return integer retval
+function reaper.ImGui_Key_R() end
+
+---@return integer retval
+function reaper.ImGui_Key_RightAlt() end
+
+---@return integer retval
+function reaper.ImGui_Key_RightArrow() end
+
+---]
+---@return integer retval
+function reaper.ImGui_Key_RightBracket() end
+
+---@return integer retval
+function reaper.ImGui_Key_RightCtrl() end
+
+---@return integer retval
+function reaper.ImGui_Key_RightShift() end
+
+---@return integer retval
+function reaper.ImGui_Key_RightSuper() end
+
+---@return integer retval
+function reaper.ImGui_Key_S() end
+
+---@return integer retval
+function reaper.ImGui_Key_ScrollLock() end
+
+---;
+---@return integer retval
+function reaper.ImGui_Key_Semicolon() end
+
+---/
+---@return integer retval
+function reaper.ImGui_Key_Slash() end
+
+---@return integer retval
+function reaper.ImGui_Key_Space() end
+
+---@return integer retval
+function reaper.ImGui_Key_T() end
+
+---@return integer retval
+function reaper.ImGui_Key_Tab() end
+
+---@return integer retval
+function reaper.ImGui_Key_U() end
+
+---@return integer retval
+function reaper.ImGui_Key_UpArrow() end
+
+---@return integer retval
+function reaper.ImGui_Key_V() end
+
+---@return integer retval
+function reaper.ImGui_Key_W() end
+
+---@return integer retval
+function reaper.ImGui_Key_X() end
+
+---@return integer retval
+function reaper.ImGui_Key_Y() end
+
+---@return integer retval
+function reaper.ImGui_Key_Z() end
+
+---Display text+label aligned the same way as value+label widgets
+---@param ctx ImGui_Context
+---@param label string
+---@param text string
+function reaper.ImGui_LabelText(ctx, label, text) end
+
+---This is an helper over BeginListBox/EndListBox for convenience purpose.Each item must be null-terminated (requires REAPER v6.44 or newer for EEL and Lua).
+---@param ctx ImGui_Context
+---@param label string
+---@param current_item integer
+---@param items string
+---@param height_in_itemsIn? integer
+---@return boolean retval, integer current_item
+function reaper.ImGui_ListBox(ctx, label, current_item, items, height_in_itemsIn) end
+
+---- items_count: Use INT_MAX if you don't know how many items you have
+---(in which case the cursor won't be advanced in the final step)
+---- items_height: Use -1.0 to be calculated automatically on first step.
+---  Otherwise pass in the distance between your items, typically
+---  GetTextLineHeightWithSpacing or GetFrameHeightWithSpacing.
+---@param clipper ImGui_ListClipper
+---@param items_count integer
+---@param items_heightIn? number
+function reaper.ImGui_ListClipper_Begin(clipper, items_count, items_heightIn) end
+
+---Automatically called on the last call of ListClipper_Step that returns false.
+---@param clipper ImGui_ListClipper
+function reaper.ImGui_ListClipper_End(clipper) end
+
+---Call ListClipper_ForceDisplayRangeByIndices before first call to
+---ListClipper_Step if you need a range of items to be displayed regardless of
+---visibility.item_max is exclusive e.g. use (42, 42+1) to make item 42 always visible BUT due
+---to alignment/padding of certain items it is likely that an extra item may be
+---included on either end of the display range.
+---@param clipper ImGui_ListClipper
+---@param item_min integer
+---@param item_max integer
+function reaper.ImGui_ListClipper_ForceDisplayRangeByIndices(clipper, item_min, item_max) end
+
+---@param clipper ImGui_ListClipper
+---@return integer display_start, integer display_end
+function reaper.ImGui_ListClipper_GetDisplayRange(clipper) end
+
+---Call until it returns false. The display_start/display_end fields from
+---ListClipper_GetDisplayRange will be set and you can process/draw those items.
+---@param clipper ImGui_ListClipper
+---@return boolean 
+function reaper.ImGui_ListClipper_Step(clipper) end
+
+---Stop logging (close file, etc.)
+---@param ctx ImGui_Context
+function reaper.ImGui_LogFinish(ctx) end
+
+---Pass text data straight to log (without being displayed)
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_LogText(ctx, text) end
+
+---Start logging all text output from the interface to the OS clipboard.
+---See also SetClipboardText.
+---@param ctx ImGui_Context
+---@param auto_open_depthIn? integer
+function reaper.ImGui_LogToClipboard(ctx, auto_open_depthIn) end
+
+---Start logging all text output from the interface to a file.
+---The data is saved to $resource_path/imgui_log.txt if filename is nil.
+---@param ctx ImGui_Context
+---@param auto_open_depthIn? integer
+---@param filenameIn? string
+function reaper.ImGui_LogToFile(ctx, auto_open_depthIn, filenameIn) end
+
+---Start logging all text output from the interface to the TTY (stdout).
+---@param ctx ImGui_Context
+---@param auto_open_depthIn? integer
+function reaper.ImGui_LogToTTY(ctx, auto_open_depthIn) end
+
+---Return true when activated. Shortcuts are displayed for convenience but not
+---processed by ImGui at the moment. Toggle state is written to 'selected' when
+---provided.
+---@param ctx ImGui_Context
+---@param label string
+---@param shortcutIn? string
+---@param p_selected? boolean
+---@param enabledIn? boolean
+---@return boolean retval, boolean|nil p_selected
+function reaper.ImGui_MenuItem(ctx, label, shortcutIn, p_selected, enabledIn) end
+
+---@return integer retval
+function reaper.ImGui_Mod_Alt() end
+
+---@return integer retval
+function reaper.ImGui_Mod_Ctrl() end
+
+---@return integer retval
+function reaper.ImGui_Mod_None() end
+
+---@return integer retval
+function reaper.ImGui_Mod_Shift() end
+
+---Alias for Mod_Ctrl on Linux and Windows and Mod_Super on macOS (Cmd key).
+---@return integer retval
+function reaper.ImGui_Mod_Shortcut() end
+
+---@return integer retval
+function reaper.ImGui_Mod_Super() end
+
+---@return integer retval
+function reaper.ImGui_MouseButton_Left() end
+
+---@return integer retval
+function reaper.ImGui_MouseButton_Middle() end
+
+---@return integer retval
+function reaper.ImGui_MouseButton_Right() end
+
+---@return integer retval
+function reaper.ImGui_MouseCursor_Arrow() end
+
+---(Unused by Dear ImGui functions. Use for e.g. hyperlinks)
+---@return integer retval
+function reaper.ImGui_MouseCursor_Hand() end
+
+---@return integer retval
+function reaper.ImGui_MouseCursor_None() end
+
+---When hovering something with disallowed interaction. Usually a crossed circle.
+---@return integer retval
+function reaper.ImGui_MouseCursor_NotAllowed() end
+
+---(Unused by Dear ImGui functions)
+---@return integer retval
+function reaper.ImGui_MouseCursor_ResizeAll() end
+
+---When hovering over a vertical border or a column.
+---@return integer retval
+function reaper.ImGui_MouseCursor_ResizeEW() end
+
+---When hovering over the bottom-left corner of a window.
+---@return integer retval
+function reaper.ImGui_MouseCursor_ResizeNESW() end
+
+---When hovering over a horizontal border.
+---@return integer retval
+function reaper.ImGui_MouseCursor_ResizeNS() end
+
+---When hovering over the bottom-right corner of a window.
+---@return integer retval
+function reaper.ImGui_MouseCursor_ResizeNWSE() end
+
+---When hovering over InputText, etc.
+---@return integer retval
+function reaper.ImGui_MouseCursor_TextInput() end
+
+---Undo a SameLine() or force a new line when in a horizontal-layout context.
+---@param ctx ImGui_Context
+function reaper.ImGui_NewLine(ctx) end
+
+---Returns DBL_MIN and DBL_MAX for this system.
+---@return number min, number max
+function reaper.ImGui_NumericLimits_Double() end
+
+---Returns FLT_MIN and FLT_MAX for this system.
+---@return number min, number max
+function reaper.ImGui_NumericLimits_Float() end
+
+---Returns INT_MIN and INT_MAX for this system.
+---@return integer min, integer max
+function reaper.ImGui_NumericLimits_Int() end
+
+---Set popup state to open (don't call every frame!).
+---ImGuiPopupFlags are available for opening options.If not modal: they can be closed by clicking anywhere outside them, or by
+---pressing ESCAPE.Use PopupFlags_NoOpenOverExistingPopup to avoid opening a popup if there's
+---already one at the same level.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param popup_flagsIn? integer
+function reaper.ImGui_OpenPopup(ctx, str_id, popup_flagsIn) end
+
+---Helper to open popup when clicked on last item. return true when just opened.
+---(Note: actually triggers on the mouse _released_ event to be consistent with
+---popup behaviors.)
+---@param ctx ImGui_Context
+---@param str_idIn? string
+---@param popup_flagsIn? integer
+function reaper.ImGui_OpenPopupOnItemClick(ctx, str_idIn, popup_flagsIn) end
+
+---@param ctx ImGui_Context
+---@param values? string
+---@param values_offsetIn? integer
+---@param overlay_textIn? string
+---@param scale_minIn? number
+---@param scale_maxIn? number
+---@param graph_size_wIn? number
+---@param graph_size_hIn? number
+function reaper.ImGui_PlotHistogram(ctx, values, values_offsetIn, overlay_textIn, scale_minIn, scale_maxIn, graph_size_wIn, graph_size_hIn) end
+
+---@param ctx ImGui_Context
+---@param values? string
+---@param values_offsetIn? integer
+---@param overlay_textIn? string
+---@param scale_minIn? number
+---@param scale_maxIn? number
+---@param graph_size_wIn? number
+---@param graph_size_hIn? number
+function reaper.ImGui_PlotLines(ctx, values, values_offsetIn, overlay_textIn, scale_minIn, scale_maxIn, graph_size_wIn, graph_size_hIn) end
+
+---Convert a position from the current platform's native coordinate position
+---system to ReaImGui global coordinates (or vice versa).This effectively flips the Y coordinate on macOS and applies HiDPI scaling on
+---Windows and Linux.
+---@param ctx ImGui_Context
+---@param x number
+---@param y number
+---@param to_nativeIn? boolean
+---@return number x, number y
+function reaper.ImGui_PointConvertNative(ctx, x, y, to_nativeIn) end
+
+---See PushButtonRepeat
+---@param ctx ImGui_Context
+function reaper.ImGui_PopButtonRepeat(ctx) end
+
+---See PushClipRect
+---@param ctx ImGui_Context
+function reaper.ImGui_PopClipRect(ctx) end
+
+---See PushFont.
+---@param ctx ImGui_Context
+function reaper.ImGui_PopFont(ctx) end
+
+---Pop from the ID stack.
+---@param ctx ImGui_Context
+function reaper.ImGui_PopID(ctx) end
+
+---See PushItemWidth
+---@param ctx ImGui_Context
+function reaper.ImGui_PopItemWidth(ctx) end
+
+---@param ctx ImGui_Context
+---@param countIn? integer
+function reaper.ImGui_PopStyleColor(ctx, countIn) end
+
+---Reset a style variable.
+---@param ctx ImGui_Context
+---@param countIn? integer
+function reaper.ImGui_PopStyleVar(ctx, countIn) end
+
+---See PushTabStop
+---@param ctx ImGui_Context
+function reaper.ImGui_PopTabStop(ctx) end
+
+---@param ctx ImGui_Context
+function reaper.ImGui_PopTextWrapPos(ctx) end
+
+---PopupFlags_AnyPopupId | PopupFlags_AnyPopupLevel
+---@return integer retval
+function reaper.ImGui_PopupFlags_AnyPopup() end
+
+---For IsPopupOpen: ignore the str_id parameter and test for any popup.
+---@return integer retval
+function reaper.ImGui_PopupFlags_AnyPopupId() end
+
+---For IsPopupOpen: search/test at any level of the popup stack
+---  (default test in the current level).
+---@return integer retval
+function reaper.ImGui_PopupFlags_AnyPopupLevel() end
+
+---For BeginPopupContext*(): open on Left Mouse release.
+---   Guaranteed to always be == 0 (same as MouseButton_Left).
+---@return integer retval
+function reaper.ImGui_PopupFlags_MouseButtonLeft() end
+
+---For BeginPopupContext*(): open on Middle Mouse release.
+---   Guaranteed to always be == 2 (same as MouseButton_Middle).
+---@return integer retval
+function reaper.ImGui_PopupFlags_MouseButtonMiddle() end
+
+---For BeginPopupContext*(): open on Right Mouse release.
+---   Guaranteed to always be == 1 (same as MouseButton_Right).
+---@return integer retval
+function reaper.ImGui_PopupFlags_MouseButtonRight() end
+
+---For OpenPopup*(), BeginPopupContext*(): don't open if there's already a popup
+---   at the same level of the popup stack.
+---@return integer retval
+function reaper.ImGui_PopupFlags_NoOpenOverExistingPopup() end
+
+---For BeginPopupContextWindow: don't return true when hovering items,
+---   only when hovering empty space.
+---@return integer retval
+function reaper.ImGui_PopupFlags_NoOpenOverItems() end
+
+---@return integer retval
+function reaper.ImGui_PopupFlags_None() end
+
+---@param ctx ImGui_Context
+---@param fraction number
+---@param size_arg_wIn? number
+---@param size_arg_hIn? number
+---@param overlayIn? string
+function reaper.ImGui_ProgressBar(ctx, fraction, size_arg_wIn, size_arg_hIn, overlayIn) end
+
+---In 'repeat' mode, Button*() functions return repeated true in a typematic
+---manner (using ConfigVar_KeyRepeatDelay/ConfigVar_KeyRepeatRate settings).Note that you can call IsItemActive after any Button to tell if the button is
+---held in the current frame.
+---@param ctx ImGui_Context
+---@param repeat_ boolean
+function reaper.ImGui_PushButtonRepeat(ctx, repeat_) end
+
+---@param ctx ImGui_Context
+---@param clip_rect_min_x number
+---@param clip_rect_min_y number
+---@param clip_rect_max_x number
+---@param clip_rect_max_y number
+---@param intersect_with_current_clip_rect boolean
+function reaper.ImGui_PushClipRect(ctx, clip_rect_min_x, clip_rect_min_y, clip_rect_max_x, clip_rect_max_y, intersect_with_current_clip_rect) end
+
+---Change the current font. Use nil to push the default font.
+---The font object must have been registered using Attach. See PopFont.
+---@param font? ImGui_Context
+function reaper.ImGui_PushFont(font) end
+
+---Push string into the ID stack.
+---@param ctx ImGui_Context
+---@param str_id string
+function reaper.ImGui_PushID(ctx, str_id) end
+
+---Push width of items for common large "item+label" widgets.- \&gt;0.0: width in pixels
+---- &lt;0.0 align xx pixels to the right of window
+---  (so -FLT_MIN always align width to the right side)
+---- 0.0 = default to ~2/3 of windows width.
+---@param ctx ImGui_Context
+---@param item_width number
+function reaper.ImGui_PushItemWidth(ctx, item_width) end
+
+---Temporarily modify a style color.
+---Call PopStyleColor to undo after use (before the end of the frame).
+---See Col_* for available style colors.
+---@param ctx ImGui_Context
+---@param idx integer
+---@param col_rgba integer
+function reaper.ImGui_PushStyleColor(ctx, idx, col_rgba) end
+
+---Temporarily modify a style variable.
+---Call PopStyleVar to undo after use (before the end of the frame).
+---See StyleVar_* for possible values of 'var_idx'.
+---@param ctx ImGui_Context
+---@param var_idx integer
+---@param val1 number
+---@param val2In? number
+function reaper.ImGui_PushStyleVar(ctx, var_idx, val1, val2In) end
+
+---Allow focusing using TAB/Shift-TAB, enabled by default but you can disable it
+---for certain widgets
+---@param ctx ImGui_Context
+---@param tab_stop boolean
+function reaper.ImGui_PushTabStop(ctx, tab_stop) end
+
+---Push word-wrapping position for Text*() commands.-  &lt; 0.0: no wrapping
+----  = 0.0: wrap to end of window (or column)
+---- \&gt; 0.0: wrap at 'wrap_pos_x' position in window local space.
+---@param ctx ImGui_Context
+---@param wrap_local_pos_xIn? number
+function reaper.ImGui_PushTextWrapPos(ctx, wrap_local_pos_xIn) end
+
+---Use with e.g. if (RadioButton("one", my_value==1)) { my_value = 1; }
+---@param ctx ImGui_Context
+---@param label string
+---@param active boolean
+---@return boolean 
+function reaper.ImGui_RadioButton(ctx, label, active) end
+
+---Shortcut to handle RadioButton's example pattern when value is an integer
+---@param ctx ImGui_Context
+---@param label string
+---@param v integer
+---@param v_button integer
+---@return boolean retval, integer v
+function reaper.ImGui_RadioButtonEx(ctx, label, v, v_button) end
+
+---@param ctx ImGui_Context
+---@param buttonIn? integer
+function reaper.ImGui_ResetMouseDragDelta(ctx, buttonIn) end
+
+---Call between widgets or groups to layout them horizontally.
+---X position given in window coordinates.
+---@param ctx ImGui_Context
+---@param offset_from_start_xIn? number
+---@param spacingIn? number
+function reaper.ImGui_SameLine(ctx, offset_from_start_xIn, spacingIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param p_selected boolean
+---@param flagsIn? integer
+---@param size_wIn? number
+---@param size_hIn? number
+---@return boolean retval, boolean p_selected
+function reaper.ImGui_Selectable(ctx, label, p_selected, flagsIn, size_wIn, size_hIn) end
+
+---Generate press events on double clicks too.
+---@return integer retval
+function reaper.ImGui_SelectableFlags_AllowDoubleClick() end
+
+---Hit testing to allow subsequent widgets to overlap this one.
+---@return integer retval
+function reaper.ImGui_SelectableFlags_AllowItemOverlap() end
+
+---Cannot be selected, display grayed out text.
+---@return integer retval
+function reaper.ImGui_SelectableFlags_Disabled() end
+
+---Clicking this doesn't close parent popup window.
+---@return integer retval
+function reaper.ImGui_SelectableFlags_DontClosePopups() end
+
+---@return integer retval
+function reaper.ImGui_SelectableFlags_None() end
+
+---Selectable frame can span all columns (text will still fit in current column).
+---@return integer retval
+function reaper.ImGui_SelectableFlags_SpanAllColumns() end
+
+---Separator, generally horizontal. inside a menu bar or in horizontal layout
+---mode, this becomes a vertical separator.
+---@param ctx ImGui_Context
+function reaper.ImGui_Separator(ctx) end
+
+---Text formatted with an horizontal line
+---@param ctx ImGui_Context
+---@param label string
+function reaper.ImGui_SeparatorText(ctx, label) end
+
+---See also the LogToClipboard function to capture GUI into clipboard,
+---or easily output text data to the clipboard.
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_SetClipboardText(ctx, text) end
+
+---Picker type, etc. User will be able to change many settings, unless you pass
+---the _NoOptions flag to your calls.
+---@param ctx ImGui_Context
+---@param flags integer
+function reaper.ImGui_SetColorEditOptions(ctx, flags) end
+
+---@param ctx ImGui_Context
+---@param var_idx integer
+---@param value number
+function reaper.ImGui_SetConfigVar(ctx, var_idx, value) end
+
+---Cursor position in window
+---@param ctx ImGui_Context
+---@param local_pos_x number
+---@param local_pos_y number
+function reaper.ImGui_SetCursorPos(ctx, local_pos_x, local_pos_y) end
+
+---Cursor X position in window
+---@param ctx ImGui_Context
+---@param local_x number
+function reaper.ImGui_SetCursorPosX(ctx, local_x) end
+
+---Cursor Y position in window
+---@param ctx ImGui_Context
+---@param local_y number
+function reaper.ImGui_SetCursorPosY(ctx, local_y) end
+
+---Cursor position in absolute screen coordinates.
+---@param ctx ImGui_Context
+---@param pos_x number
+---@param pos_y number
+function reaper.ImGui_SetCursorScreenPos(ctx, pos_x, pos_y) end
+
+---The type is a user defined string of maximum 32 characters.
+---Strings starting with '_' are reserved for dear imgui internal types.
+---Data is copied and held by imgui.
+---@param ctx ImGui_Context
+---@param type string
+---@param data string
+---@param condIn? integer
+---@return boolean 
+function reaper.ImGui_SetDragDropPayload(ctx, type, data, condIn) end
+
+---Allow last item to be overlapped by a subsequent item. sometimes useful with
+---invisible buttons, selectables, etc. to catch unused area.
+---@param ctx ImGui_Context
+function reaper.ImGui_SetItemAllowOverlap(ctx) end
+
+---Make last item the default focused item of a window.
+---@param ctx ImGui_Context
+function reaper.ImGui_SetItemDefaultFocus(ctx) end
+
+---Focus keyboard on the next widget. Use positive 'offset' to access sub
+---components of a multiple component widget. Use -1 to access previous widget.
+---@param ctx ImGui_Context
+---@param offsetIn? integer
+function reaper.ImGui_SetKeyboardFocusHere(ctx, offsetIn) end
+
+---Set desired mouse cursor shape. See MouseCursor_* for possible values.
+---@param ctx ImGui_Context
+---@param cursor_type integer
+function reaper.ImGui_SetMouseCursor(ctx, cursor_type) end
+
+---Request capture of keyboard shortcuts in REAPER's global scope for the next frame.
+---@param ctx ImGui_Context
+---@param want_capture_keyboard boolean
+function reaper.ImGui_SetNextFrameWantCaptureKeyboard(ctx, want_capture_keyboard) end
+
+---Set next TreeNode/CollapsingHeader open state.
+---Can also be done with the TreeNodeFlags_DefaultOpen flag.
+---@param ctx ImGui_Context
+---@param is_open boolean
+---@param condIn? integer
+function reaper.ImGui_SetNextItemOpen(ctx, is_open, condIn) end
+
+---Set width of the _next_ common large "item+label" widget.- \&gt;0.0: width in pixels
+---- &lt;0.0 align xx pixels to the right of window
+---  (so -FLT_MIN always align width to the right side)
+---@param ctx ImGui_Context
+---@param item_width number
+function reaper.ImGui_SetNextItemWidth(ctx, item_width) end
+
+---Set next window background color alpha. Helper to easily override the Alpha
+---component of Col_WindowBg/Col_ChildBg/Col_PopupBg.
+---You may also use WindowFlags_NoBackground for a fully transparent window.
+---@param ctx ImGui_Context
+---@param alpha number
+function reaper.ImGui_SetNextWindowBgAlpha(ctx, alpha) end
+
+---Set next window collapsed state.
+---@param ctx ImGui_Context
+---@param collapsed boolean
+---@param condIn? integer
+function reaper.ImGui_SetNextWindowCollapsed(ctx, collapsed, condIn) end
+
+---Set next window content size (~ scrollable client area, which enforce the
+---range of scrollbars). Not including window decorations (title bar, menu bar,
+---etc.) nor StyleVar_WindowPadding. set an axis to 0.0 to leave it automatic.
+---@param ctx ImGui_Context
+---@param size_w number
+---@param size_h number
+function reaper.ImGui_SetNextWindowContentSize(ctx, size_w, size_h) end
+
+---@param ctx ImGui_Context
+---@param dock_id integer
+---@param condIn? integer
+function reaper.ImGui_SetNextWindowDockID(ctx, dock_id, condIn) end
+
+---Set next window to be focused / top-most.
+---@param ctx ImGui_Context
+function reaper.ImGui_SetNextWindowFocus(ctx) end
+
+---Set next window position. Use pivot=(0.5,0.5) to center on given point, etc.
+---@param ctx ImGui_Context
+---@param pos_x number
+---@param pos_y number
+---@param condIn? integer
+---@param pivot_xIn? number
+---@param pivot_yIn? number
+function reaper.ImGui_SetNextWindowPos(ctx, pos_x, pos_y, condIn, pivot_xIn, pivot_yIn) end
+
+---Set next window scrolling value (use &lt; 0.0 to not affect a given axis).
+---@param ctx ImGui_Context
+---@param scroll_x number
+---@param scroll_y number
+function reaper.ImGui_SetNextWindowScroll(ctx, scroll_x, scroll_y) end
+
+---Set next window size. set axis to 0.0 to force an auto-fit on this axis.
+---@param ctx ImGui_Context
+---@param size_w number
+---@param size_h number
+---@param condIn? integer
+function reaper.ImGui_SetNextWindowSize(ctx, size_w, size_h, condIn) end
+
+---Set next window size limits. Use -1,-1 on either X/Y axis to preserve the
+---current size. Use FLT_MAX (second return value of NumericLimits_Float) for no
+---maximum size. Sizes will be rounded down.
+---@param ctx ImGui_Context
+---@param size_min_w number
+---@param size_min_h number
+---@param size_max_w number
+---@param callbackIn? number
+function reaper.ImGui_SetNextWindowSizeConstraints(ctx, size_min_w, size_min_h, size_max_w, callbackIn) end
+
+---Adjust scrolling amount to make given position visible.
+---Generally GetCursorStartPos() + offset to compute a valid position.
+---@param ctx ImGui_Context
+---@param local_x number
+---@param center_x_ratioIn? number
+function reaper.ImGui_SetScrollFromPosX(ctx, local_x, center_x_ratioIn) end
+
+---Adjust scrolling amount to make given position visible.
+---Generally GetCursorStartPos() + offset to compute a valid position.
+---@param ctx ImGui_Context
+---@param local_y number
+---@param center_y_ratioIn? number
+function reaper.ImGui_SetScrollFromPosY(ctx, local_y, center_y_ratioIn) end
+
+---Adjust scrolling amount to make current cursor position visible.
+---center_x_ratio=0.0: left, 0.5: center, 1.0: right.
+---When using to make a "default/current item" visible,
+---consider using SetItemDefaultFocus instead.
+---@param ctx ImGui_Context
+---@param center_x_ratioIn? number
+function reaper.ImGui_SetScrollHereX(ctx, center_x_ratioIn) end
+
+---Adjust scrolling amount to make current cursor position visible.
+---center_y_ratio=0.0: top, 0.5: center, 1.0: bottom.
+---When using to make a "default/current item" visible,
+---consider using SetItemDefaultFocus instead.
+---@param ctx ImGui_Context
+---@param center_y_ratioIn? number
+function reaper.ImGui_SetScrollHereY(ctx, center_y_ratioIn) end
+
+---Set scrolling amount [0 .. GetScrollMaxX()]
+---@param ctx ImGui_Context
+---@param scroll_x number
+function reaper.ImGui_SetScrollX(ctx, scroll_x) end
+
+---Set scrolling amount [0 .. GetScrollMaxY()]
+---@param ctx ImGui_Context
+---@param scroll_y number
+function reaper.ImGui_SetScrollY(ctx, scroll_y) end
+
+---Notify TabBar or Docking system of a closed tab/window ahead
+---(useful to reduce visual flicker on reorderable tab bars).
+---For tab-bar: call after BeginTabBar and before Tab submissions.
+---Otherwise call with a window name.
+---@param ctx ImGui_Context
+---@param tab_or_docked_window_label string
+function reaper.ImGui_SetTabItemClosed(ctx, tab_or_docked_window_label) end
+
+---Set a text-only tooltip, typically use with IsItemHovered. override any
+---previous call to SetTooltip.
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_SetTooltip(ctx, text) end
+
+---(Not recommended) Set current window collapsed state.
+---Prefer using SetNextWindowCollapsed.
+---@param ctx ImGui_Context
+---@param collapsed boolean
+---@param condIn? integer
+function reaper.ImGui_SetWindowCollapsed(ctx, collapsed, condIn) end
+
+---Set named window collapsed state.
+---@param ctx ImGui_Context
+---@param name string
+---@param collapsed boolean
+---@param condIn? integer
+function reaper.ImGui_SetWindowCollapsedEx(ctx, name, collapsed, condIn) end
+
+---(Not recommended) Set current window to be focused / top-most.
+---Prefer using SetNextWindowFocus.
+---@param ctx ImGui_Context
+function reaper.ImGui_SetWindowFocus(ctx) end
+
+---Set named window to be focused / top-most. Use an empty name to remove focus.
+---@param ctx ImGui_Context
+---@param name string
+function reaper.ImGui_SetWindowFocusEx(ctx, name) end
+
+---(Not recommended) Set current window position - call within Begin/End.
+---Prefer using SetNextWindowPos, as this may incur tearing and minor side-effects.
+---@param ctx ImGui_Context
+---@param pos_x number
+---@param pos_y number
+---@param condIn? integer
+function reaper.ImGui_SetWindowPos(ctx, pos_x, pos_y, condIn) end
+
+---Set named window position.
+---@param ctx ImGui_Context
+---@param name string
+---@param pos_x number
+---@param pos_y number
+---@param condIn? integer
+function reaper.ImGui_SetWindowPosEx(ctx, name, pos_x, pos_y, condIn) end
+
+---(Not recommended) Set current window size - call within Begin/End.
+---Set size_w and size_h to 0 to force an auto-fit.
+---Prefer using SetNextWindowSize, as this may incur tearing and minor side-effects.
+---@param ctx ImGui_Context
+---@param size_w number
+---@param size_h number
+---@param condIn? integer
+function reaper.ImGui_SetWindowSize(ctx, size_w, size_h, condIn) end
+
+---Set named window size. Set axis to 0.0 to force an auto-fit on this axis.
+---@param ctx ImGui_Context
+---@param name string
+---@param size_w number
+---@param size_h number
+---@param condIn? integer
+function reaper.ImGui_SetWindowSizeEx(ctx, name, size_w, size_h, condIn) end
+
+---Create About window.
+---Display ReaImGui version, Dear ImGui version, credits and build/system information.
+---@param ctx ImGui_Context
+---@param p_open? boolean
+---@return boolean|nil p_open
+function reaper.ImGui_ShowAboutWindow(ctx, p_open) end
+
+---Create Debug Log window. display a simplified log of important dear imgui events.
+---@param ctx ImGui_Context
+---@param p_open? boolean
+---@return boolean|nil p_open
+function reaper.ImGui_ShowDebugLogWindow(ctx, p_open) end
+
+---Create Metrics/Debugger window.
+---Display Dear ImGui internals: windows, draw commands, various internal state, etc.
+---@param ctx ImGui_Context
+---@param p_open? boolean
+---@return boolean|nil p_open
+function reaper.ImGui_ShowMetricsWindow(ctx, p_open) end
+
+---Create Stack Tool window. Hover items with mouse to query information about
+---the source of their unique ID.
+---@param ctx ImGui_Context
+---@param p_open? boolean
+---@return boolean|nil p_open
+function reaper.ImGui_ShowStackToolWindow(ctx, p_open) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v_rad number
+---@param v_degrees_minIn? number
+---@param v_degrees_maxIn? number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v_rad
+function reaper.ImGui_SliderAngle(ctx, label, v_rad, v_degrees_minIn, v_degrees_maxIn, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v number
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v
+function reaper.ImGui_SliderDouble(ctx, label, v, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2
+function reaper.ImGui_SliderDouble2(ctx, label, v1, v2, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3
+function reaper.ImGui_SliderDouble3(ctx, label, v1, v2, v3, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 number
+---@param v2 number
+---@param v3 number
+---@param v4 number
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v1, number v2, number v3, number v4
+function reaper.ImGui_SliderDouble4(ctx, label, v1, v2, v3, v4, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param values? string
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_SliderDoubleN(ctx, values, v_min, v_max, formatIn, flagsIn) end
+
+---Clamp value to min/max bounds when input manually with CTRL+Click.
+---   By default CTRL+Click allows going out of bounds.
+---@return integer retval
+function reaper.ImGui_SliderFlags_AlwaysClamp() end
+
+---Make the widget logarithmic (linear otherwise).
+---   Consider using SliderFlags_NoRoundToFormat with this if using a format-string
+---   with small amount of digits.
+---@return integer retval
+function reaper.ImGui_SliderFlags_Logarithmic() end
+
+---Disable CTRL+Click or Enter key allowing to input text directly into the widget.
+---@return integer retval
+function reaper.ImGui_SliderFlags_NoInput() end
+
+---Disable rounding underlying value to match precision of the display format
+---   string (e.g. %.3f values are rounded to those 3 digits).
+---@return integer retval
+function reaper.ImGui_SliderFlags_NoRoundToFormat() end
+
+---@return integer retval
+function reaper.ImGui_SliderFlags_None() end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v integer
+---@param v_min integer
+---@param v_max integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v
+function reaper.ImGui_SliderInt(ctx, label, v, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v_min integer
+---@param v_max integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2
+function reaper.ImGui_SliderInt2(ctx, label, v1, v2, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param v_min integer
+---@param v_max integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3
+function reaper.ImGui_SliderInt3(ctx, label, v1, v2, v3, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param v1 integer
+---@param v2 integer
+---@param v3 integer
+---@param v4 integer
+---@param v_min integer
+---@param v_max integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v1, integer v2, integer v3, integer v4
+function reaper.ImGui_SliderInt4(ctx, label, v1, v2, v3, v4, v_min, v_max, formatIn, flagsIn) end
+
+---Button with StyleVar_FramePadding=(0,0) to easily embed within text.
+---@param ctx ImGui_Context
+---@param label string
+---@return boolean 
+function reaper.ImGui_SmallButton(ctx, label) end
+
+---Ascending = 0-&gt;9, A-&gt;Z etc.
+---@return integer retval
+function reaper.ImGui_SortDirection_Ascending() end
+
+---Descending = 9-&gt;0, Z-&gt;A etc.
+---@return integer retval
+function reaper.ImGui_SortDirection_Descending() end
+
+---@return integer retval
+function reaper.ImGui_SortDirection_None() end
+
+---Add vertical spacing.
+---@param ctx ImGui_Context
+function reaper.ImGui_Spacing(ctx) end
+
+---Global alpha applies to everything in Dear ImGui.
+---@return integer retval
+function reaper.ImGui_StyleVar_Alpha() end
+
+---Alignment of button text when button is larger than text.
+---   Defaults to (0.5, 0.5) (centered).
+---@return integer retval
+function reaper.ImGui_StyleVar_ButtonTextAlign() end
+
+---Padding within a table cell.
+---@return integer retval
+function reaper.ImGui_StyleVar_CellPadding() end
+
+---Thickness of border around child windows. Generally set to 0.0 or 1.0.
+---   (Other values are not well tested and more CPU/GPU costly).
+---@return integer retval
+function reaper.ImGui_StyleVar_ChildBorderSize() end
+
+---Radius of child window corners rounding. Set to 0.0 to have rectangular windows.
+---@return integer retval
+function reaper.ImGui_StyleVar_ChildRounding() end
+
+---Additional alpha multiplier applied by BeginDisabled.
+---  Multiply over current value of Alpha.
+---@return integer retval
+function reaper.ImGui_StyleVar_DisabledAlpha() end
+
+---Thickness of border around frames. Generally set to 0.0 or 1.0.
+---   (Other values are not well tested and more CPU/GPU costly).
+---@return integer retval
+function reaper.ImGui_StyleVar_FrameBorderSize() end
+
+---Padding within a framed rectangle (used by most widgets).
+---@return integer retval
+function reaper.ImGui_StyleVar_FramePadding() end
+
+---Radius of frame corners rounding.
+---   Set to 0.0 to have rectangular frame (used by most widgets).
+---@return integer retval
+function reaper.ImGui_StyleVar_FrameRounding() end
+
+---Minimum width/height of a grab box for slider/scrollbar.
+---@return integer retval
+function reaper.ImGui_StyleVar_GrabMinSize() end
+
+---Radius of grabs corners rounding. Set to 0.0 to have rectangular slider grabs.
+---@return integer retval
+function reaper.ImGui_StyleVar_GrabRounding() end
+
+---Horizontal indentation when e.g. entering a tree node.
+---   Generally == (GetFontSize + StyleVar_FramePadding.x*2).
+---@return integer retval
+function reaper.ImGui_StyleVar_IndentSpacing() end
+
+---Horizontal and vertical spacing between within elements of a composed widget
+---   (e.g. a slider and its label).
+---@return integer retval
+function reaper.ImGui_StyleVar_ItemInnerSpacing() end
+
+---Horizontal and vertical spacing between widgets/lines.
+---@return integer retval
+function reaper.ImGui_StyleVar_ItemSpacing() end
+
+---Thickness of border around popup/tooltip windows. Generally set to 0.0 or 1.0.
+---   (Other values are not well tested and more CPU/GPU costly).
+---@return integer retval
+function reaper.ImGui_StyleVar_PopupBorderSize() end
+
+---Radius of popup window corners rounding.
+---   (Note that tooltip windows use StyleVar_WindowRounding.)
+---@return integer retval
+function reaper.ImGui_StyleVar_PopupRounding() end
+
+---Radius of grab corners for scrollbar.
+---@return integer retval
+function reaper.ImGui_StyleVar_ScrollbarRounding() end
+
+---Width of the vertical scrollbar, Height of the horizontal scrollbar.
+---@return integer retval
+function reaper.ImGui_StyleVar_ScrollbarSize() end
+
+---Alignment of selectable text. Defaults to (0.0, 0.0) (top-left aligned).
+---   It's generally important to keep this left-aligned if you want to lay
+---   multiple items on a same line.
+---@return integer retval
+function reaper.ImGui_StyleVar_SelectableTextAlign() end
+
+---Alignment of text within the separator.
+---Defaults to (0.0, 0.5) (left aligned, center).
+---@return integer retval
+function reaper.ImGui_StyleVar_SeparatorTextAlign() end
+
+---Thickness of border in SeparatorText()
+---@return integer retval
+function reaper.ImGui_StyleVar_SeparatorTextBorderSize() end
+
+---Horizontal offset of text from each edge of the separator + spacing on other
+---axis. Generally small values. .y is recommended to be == StyleVar_FramePadding.y.
+---@return integer retval
+function reaper.ImGui_StyleVar_SeparatorTextPadding() end
+
+---Radius of upper corners of a tab. Set to 0.0 to have rectangular tabs.
+---@return integer retval
+function reaper.ImGui_StyleVar_TabRounding() end
+
+---Thickness of border around windows. Generally set to 0.0 or 1.0.
+---  (Other values are not well tested and more CPU/GPU costly).
+---@return integer retval
+function reaper.ImGui_StyleVar_WindowBorderSize() end
+
+---Minimum window size. This is a global setting.
+---  If you want to constrain individual windows, use SetNextWindowSizeConstraints.
+---@return integer retval
+function reaper.ImGui_StyleVar_WindowMinSize() end
+
+---Padding within a window.
+---@return integer retval
+function reaper.ImGui_StyleVar_WindowPadding() end
+
+---Radius of window corners rounding. Set to 0.0 to have rectangular windows.
+---  Large values tend to lead to variety of artifacts and are not recommended.
+---@return integer retval
+function reaper.ImGui_StyleVar_WindowRounding() end
+
+---Alignment for title bar text.
+---   Defaults to (0.0,0.5) for left-aligned,vertically centered.
+---@return integer retval
+function reaper.ImGui_StyleVar_WindowTitleAlign() end
+
+---Automatically select new tabs when they appear.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_AutoSelectNewTabs() end
+
+---Resize tabs when they don't fit.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_FittingPolicyResizeDown() end
+
+---Add scroll buttons when tabs don't fit.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_FittingPolicyScroll() end
+
+---Disable behavior of closing tabs (that are submitted with p_open != nil)
+---   with middle mouse button. You can still repro this behavior on user's side
+---   with if(IsItemHovered() &amp;&amp; IsMouseClicked(2)) p_open = false.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_NoCloseWithMiddleMouseButton() end
+
+---Disable scrolling buttons (apply when fitting policy is
+---   TabBarFlags_FittingPolicyScroll).
+---@return integer retval
+function reaper.ImGui_TabBarFlags_NoTabListScrollingButtons() end
+
+---Disable tooltips when hovering a tab.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_NoTooltip() end
+
+---@return integer retval
+function reaper.ImGui_TabBarFlags_None() end
+
+---Allow manually dragging tabs to re-order them + New tabs are appended at
+---   the end of list.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_Reorderable() end
+
+---Disable buttons to open the tab list popup.
+---@return integer retval
+function reaper.ImGui_TabBarFlags_TabListPopupButton() end
+
+---Create a Tab behaving like a button. Return true when clicked.
+---Cannot be selected in the tab bar.
+---@param ctx ImGui_Context
+---@param label string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_TabItemButton(ctx, label, flagsIn) end
+
+---Enforce the tab position to the left of the tab bar (after the tab list popup button).
+---@return integer retval
+function reaper.ImGui_TabItemFlags_Leading() end
+
+---Disable behavior of closing tabs (that are submitted with p_open != nil) with
+---   middle mouse button. You can still repro this behavior on user's side with
+---   if(IsItemHovered() &amp;&amp; IsMouseClicked(2)) p_open = false.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_NoCloseWithMiddleMouseButton() end
+
+---Don't call PushID(tab-&gt;ID)/PopID() on BeginTabItem/EndTabItem.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_NoPushId() end
+
+---Disable reordering this tab or having another tab cross over this tab.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_NoReorder() end
+
+---Disable tooltip for the given tab.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_NoTooltip() end
+
+---@return integer retval
+function reaper.ImGui_TabItemFlags_None() end
+
+---Trigger flag to programmatically make the tab selected when calling BeginTabItem.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_SetSelected() end
+
+---Enforce the tab position to the right of the tab bar (before the scrolling buttons).
+---@return integer retval
+function reaper.ImGui_TabItemFlags_Trailing() end
+
+---Append '*' to title without affecting the ID, as a convenience to avoid using
+---   the ### operator. Also: tab is selected on closure and closure is deferred by
+---   one frame to allow code to undo it without flicker.
+---@return integer retval
+function reaper.ImGui_TabItemFlags_UnsavedDocument() end
+
+---Set cell background color (top-most color).
+---@return integer retval
+function reaper.ImGui_TableBgTarget_CellBg() end
+
+---@return integer retval
+function reaper.ImGui_TableBgTarget_None() end
+
+---Set row background color 0 (generally used for background,
+---   automatically set when TableFlags_RowBg is used).
+---@return integer retval
+function reaper.ImGui_TableBgTarget_RowBg0() end
+
+---Set row background color 1 (generally used for selection marking).
+---@return integer retval
+function reaper.ImGui_TableBgTarget_RowBg1() end
+
+---Default as a hidden/disabled column.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_DefaultHide() end
+
+---Default as a sorting column.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_DefaultSort() end
+
+---Overriding/master disable flag: hide column, won't show in context menu
+---   (unlike calling TableSetColumnEnabled which manipulates the user accessible state).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_Disabled() end
+
+---Ignore current Indent value when entering cell (default for columns &gt; 0).
+---   Indentation changes _within_ the cell will still be honored.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IndentDisable() end
+
+---Use current Indent value when entering cell (default for column 0).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IndentEnable() end
+
+---Status: is enabled == not hidden by user/api (referred to as "Hide" in
+---   _DefaultHide and _NoHide) flags.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IsEnabled() end
+
+---Status: is hovered by mouse.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IsHovered() end
+
+---Status: is currently part of the sort specs.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IsSorted() end
+
+---Status: is visible == is enabled AND not clipped by scrolling.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_IsVisible() end
+
+---Disable clipping for this column
+---   (all NoClip columns will render in a same draw command).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoClip() end
+
+---TableHeadersRow will not submit label for this column.
+---   Convenient for some small columns. Name will still appear in context menu.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoHeaderLabel() end
+
+---Disable header text width contribution to automatic column width.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoHeaderWidth() end
+
+---Disable ability to hide/disable this column.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoHide() end
+
+---Disable manual reordering this column, this will also prevent other columns
+---   from crossing over this column.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoReorder() end
+
+---Disable manual resizing.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoResize() end
+
+---Disable ability to sort on this field
+---   (even if TableFlags_Sortable is set on the table).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoSort() end
+
+---Disable ability to sort in the ascending direction.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoSortAscending() end
+
+---Disable ability to sort in the descending direction.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_NoSortDescending() end
+
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_None() end
+
+---Make the initial sort direction Ascending when first sorting on this column (default).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_PreferSortAscending() end
+
+---Make the initial sort direction Descending when first sorting on this column.
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_PreferSortDescending() end
+
+---Column will not stretch. Preferable with horizontal scrolling enabled
+---   (default if table sizing policy is _SizingFixedFit and table is resizable).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_WidthFixed() end
+
+---Column will stretch. Preferable with horizontal scrolling disabled
+---   (default if table sizing policy is _SizingStretchSame or _SizingStretchProp).
+---@return integer retval
+function reaper.ImGui_TableColumnFlags_WidthStretch() end
+
+---Draw all borders.
+---@return integer retval
+function reaper.ImGui_TableFlags_Borders() end
+
+---Draw horizontal borders.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersH() end
+
+---Draw inner borders.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersInner() end
+
+---Draw horizontal borders between rows.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersInnerH() end
+
+---Draw vertical borders between columns.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersInnerV() end
+
+---Draw outer borders.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersOuter() end
+
+---Draw horizontal borders at the top and bottom.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersOuterH() end
+
+---Draw vertical borders on the left and right sides.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersOuterV() end
+
+---Draw vertical borders.
+---@return integer retval
+function reaper.ImGui_TableFlags_BordersV() end
+
+---Right-click on columns body/contents will display table context menu.
+---   By default it is available in TableHeadersRow.
+---@return integer retval
+function reaper.ImGui_TableFlags_ContextMenuInBody() end
+
+---Enable hiding/disabling columns in context menu.
+---@return integer retval
+function reaper.ImGui_TableFlags_Hideable() end
+
+---Disable clipping rectangle for every individual columns
+---   (reduce draw command count, items will be able to overflow into other columns).
+---   Generally incompatible with TableSetupScrollFreeze.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoClip() end
+
+---Make outer width auto-fit to columns, overriding outer_size.x value. Only
+---   available when ScrollX/ScrollY are disabled and Stretch columns are not used.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoHostExtendX() end
+
+---Make outer height stop exactly at outer_size.y (prevent auto-extending table
+---   past the limit). Only available when ScrollX/ScrollY are disabled.
+---   Data below the limit will be clipped and not visible.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoHostExtendY() end
+
+---Disable keeping column always minimally visible when ScrollX is off and table
+---   gets too small. Not recommended if columns are resizable.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoKeepColumnsVisible() end
+
+---Disable inner padding between columns (double inner padding if
+---   TableFlags_BordersOuterV is on, single inner padding if BordersOuterV is off).
+---@return integer retval
+function reaper.ImGui_TableFlags_NoPadInnerX() end
+
+---Default if TableFlags_BordersOuterV is off. Disable outermost padding.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoPadOuterX() end
+
+---Disable persisting columns order, width and sort settings in the .ini file.
+---@return integer retval
+function reaper.ImGui_TableFlags_NoSavedSettings() end
+
+---@return integer retval
+function reaper.ImGui_TableFlags_None() end
+
+---Default if TableFlags_BordersOuterV is on. Enable outermost padding.
+---   Generally desirable if you have headers.
+---@return integer retval
+function reaper.ImGui_TableFlags_PadOuterX() end
+
+---Disable distributing remainder width to stretched columns (width allocation
+---   on a 100-wide table with 3 columns: Without this flag: 33,33,34. With this
+---   flag: 33,33,33).
+---   With larger number of columns, resizing will appear to be less smooth.
+---@return integer retval
+function reaper.ImGui_TableFlags_PreciseWidths() end
+
+---Enable reordering columns in header row
+---   (need calling TableSetupColumn + TableHeadersRow to display headers).
+---@return integer retval
+function reaper.ImGui_TableFlags_Reorderable() end
+
+---Enable resizing columns.
+---@return integer retval
+function reaper.ImGui_TableFlags_Resizable() end
+
+---Set each RowBg color with Col_TableRowBg or Col_TableRowBgAlt (equivalent of
+---   calling TableSetBgColor with TableBgTarget_RowBg0 on each row manually).
+---@return integer retval
+function reaper.ImGui_TableFlags_RowBg() end
+
+---Enable horizontal scrolling. Require 'outer_size' parameter of BeginTable to
+---   specify the container size. Changes default sizing policy.
+---   Because this creates a child window, ScrollY is currently generally
+---   recommended when using ScrollX.
+---@return integer retval
+function reaper.ImGui_TableFlags_ScrollX() end
+
+---Enable vertical scrolling.
+---   Require 'outer_size' parameter of BeginTable to specify the container size.
+---@return integer retval
+function reaper.ImGui_TableFlags_ScrollY() end
+
+---Columns default to _WidthFixed or _WidthAuto (if resizable or not resizable),
+---   matching contents width.
+---@return integer retval
+function reaper.ImGui_TableFlags_SizingFixedFit() end
+
+---Columns default to _WidthFixed or _WidthAuto (if resizable or not resizable),
+---   matching the maximum contents width of all columns.
+---   Implicitly enable TableFlags_NoKeepColumnsVisible.
+---@return integer retval
+function reaper.ImGui_TableFlags_SizingFixedSame() end
+
+---Columns default to _WidthStretch with default weights proportional to each
+---   columns contents widths.
+---@return integer retval
+function reaper.ImGui_TableFlags_SizingStretchProp() end
+
+---Columns default to _WidthStretch with default weights all equal,
+---   unless overriden by TableSetupColumn.
+---@return integer retval
+function reaper.ImGui_TableFlags_SizingStretchSame() end
+
+---Hold shift when clicking headers to sort on multiple column.
+---   TableGetGetSortSpecs may return specs where (SpecsCount &gt; 1).
+---@return integer retval
+function reaper.ImGui_TableFlags_SortMulti() end
+
+---Allow no sorting, disable default sorting.
+---   TableGetColumnSortSpecs may return specs where (SpecsCount == 0).
+---@return integer retval
+function reaper.ImGui_TableFlags_SortTristate() end
+
+---Enable sorting. Call TableNeedSort/TableGetColumnSortSpecs to obtain sort specs.
+---   Also see TableFlags_SortMulti and TableFlags_SortTristate.
+---@return integer retval
+function reaper.ImGui_TableFlags_Sortable() end
+
+---Return number of columns (value passed to BeginTable).
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_TableGetColumnCount(ctx) end
+
+---Return column flags so you can query their Enabled/Visible/Sorted/Hovered
+---status flags. Pass -1 to use current column.
+---@param ctx ImGui_Context
+---@param column_nIn? integer
+---@return integer retval
+function reaper.ImGui_TableGetColumnFlags(ctx, column_nIn) end
+
+---Return current column index.
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_TableGetColumnIndex(ctx) end
+
+---Return "" if column didn't have a name declared by TableSetupColumn.
+---Pass -1 to use current column.
+---@param ctx ImGui_Context
+---@param column_nIn? integer
+---@return string retval
+function reaper.ImGui_TableGetColumnName(ctx, column_nIn) end
+
+---Sorting specification for one column of a table.
+---Call while incrementing 'id' from 0 until false is returned.- ColumnUserID:  User id of the column (if specified by a TableSetupColumn call)
+---- ColumnIndex:   Index of the column
+---- SortOrder:     Index within parent SortSpecs (always stored in order starting
+---  from 0, tables sorted on a single criteria will always have a 0 here)
+---- SortDirection: SortDirection_Ascending or SortDirection_Descending
+---  (you can use this or SortSign, whichever is more convenient for your sort
+---  function)See TableNeedSort.
+---@param ctx ImGui_Context
+---@param id integer
+---@return boolean retval, integer column_user_id, integer column_index, integer sort_order, integer sort_direction
+function reaper.ImGui_TableGetColumnSortSpecs(ctx, id) end
+
+---Return current row index.
+---@param ctx ImGui_Context
+---@return integer retval
+function reaper.ImGui_TableGetRowIndex(ctx) end
+
+---Submit one header cell manually (rarely used). See TableSetupColumn.
+---@param ctx ImGui_Context
+---@param label string
+function reaper.ImGui_TableHeader(ctx, label) end
+
+---Submit all headers cells based on data provided to TableSetupColumn +
+---submit context menu.
+---@param ctx ImGui_Context
+function reaper.ImGui_TableHeadersRow(ctx) end
+
+---Return true once when sorting specs have changed since last call,
+---or the first time. 'has_specs' is false when not sorting.See TableGetColumnSortSpecs.
+---@param ctx ImGui_Context
+---@return boolean retval, boolean has_specs
+function reaper.ImGui_TableNeedSort(ctx) end
+
+---Append into the next column (or first column of next row if currently in
+---last column). Return true when column is visible.
+---@param ctx ImGui_Context
+---@return boolean 
+function reaper.ImGui_TableNextColumn(ctx) end
+
+---Append into the first cell of a new row.
+---@param ctx ImGui_Context
+---@param row_flagsIn? integer
+---@param min_row_heightIn? number
+function reaper.ImGui_TableNextRow(ctx, row_flagsIn, min_row_heightIn) end
+
+---Identify header row (set default background color + width of its contents
+---   accounted different for auto column width).
+---@return integer retval
+function reaper.ImGui_TableRowFlags_Headers() end
+
+---For TableNextRow.
+---@return integer retval
+function reaper.ImGui_TableRowFlags_None() end
+
+---Change the color of a cell, row, or column.
+---See TableBgTarget_* flags for details.
+---@param ctx ImGui_Context
+---@param target integer
+---@param color_rgba integer
+---@param column_nIn? integer
+function reaper.ImGui_TableSetBgColor(ctx, target, color_rgba, column_nIn) end
+
+---Change user-accessible enabled/disabled state of a column, set to false to
+---hide the column. Note that end-user can use the context menu to change this
+---themselves (right-click in headers, or right-click in columns body with
+---TableFlags_ContextMenuInBody).- Require table to have the TableFlags_Hideable flag because we are manipulating
+---  user accessible state.
+---- Request will be applied during next layout, which happens on the first call to
+---  TableNextRow after Begin_Table.
+---- For the getter you can test
+---  (TableGetColumnFlags() &amp; TableColumnFlags_IsEnabled) != 0.
+---@param ctx ImGui_Context
+---@param column_n integer
+---@param v boolean
+function reaper.ImGui_TableSetColumnEnabled(ctx, column_n, v) end
+
+---Append into the specified column. Return true when column is visible.
+---@param ctx ImGui_Context
+---@param column_n integer
+---@return boolean 
+function reaper.ImGui_TableSetColumnIndex(ctx, column_n) end
+
+---Use to specify label, resizing policy, default width/weight, id,
+---various other flags etc.
+---@param ctx ImGui_Context
+---@param label string
+---@param flagsIn? integer
+---@param init_width_or_weightIn? number
+---@param user_idIn? integer
+function reaper.ImGui_TableSetupColumn(ctx, label, flagsIn, init_width_or_weightIn, user_idIn) end
+
+---Lock columns/rows so they stay visible when scrolled.
+---@param ctx ImGui_Context
+---@param cols integer
+---@param rows integer
+function reaper.ImGui_TableSetupScrollFreeze(ctx, cols, rows) end
+
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_Text(ctx, text) end
+
+---Shortcut for PushStyleColor(Col_Text, color); Text(text); PopStyleColor();
+---@param ctx ImGui_Context
+---@param col_rgba integer
+---@param text string
+function reaper.ImGui_TextColored(ctx, col_rgba, text) end
+
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_TextDisabled(ctx, text) end
+
+---@param filter ImGui_TextFilter
+function reaper.ImGui_TextFilter_Clear(filter) end
+
+---Helper calling InputText+TextFilter_Set
+---@param ctx? ImGui_TextFilter
+---@param labelIn? string
+---@param widthIn? number
+---@return boolean 
+function reaper.ImGui_TextFilter_Draw(ctx, labelIn, widthIn) end
+
+---@param filter ImGui_TextFilter
+---@return string retval
+function reaper.ImGui_TextFilter_Get(filter) end
+
+---@param filter ImGui_TextFilter
+---@return boolean 
+function reaper.ImGui_TextFilter_IsActive(filter) end
+
+---@param filter ImGui_TextFilter
+---@param text string
+---@return boolean 
+function reaper.ImGui_TextFilter_PassFilter(filter, text) end
+
+---@param filter ImGui_TextFilter
+---@param filter_text string
+function reaper.ImGui_TextFilter_Set(filter, filter_text) end
+
+---Shortcut for PushTextWrapPos(0.0); Text(text); PopTextWrapPos();.
+---Note that this won't work on an auto-resizing window if there's no other
+---widgets to extend the window width, yoy may need to set a size using
+---SetNextWindowSize.
+---@param ctx ImGui_Context
+---@param text string
+function reaper.ImGui_TextWrapped(ctx, text) end
+
+---TreeNode functions return true when the node is open, in which case you need
+---to also call TreePop when you are finished displaying the tree node contents.
+---@param ctx ImGui_Context
+---@param label string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_TreeNode(ctx, label, flagsIn) end
+
+---Helper variation to easily decorelate the id from the displayed string.
+---Read the [FAQ](https://dearimgui.org/faq) about why and how to use ID.
+---To align arbitrary text at the same level as a TreeNode you can use Bullet.
+---@param ctx ImGui_Context
+---@param str_id string
+---@param label string
+---@param flagsIn? integer
+---@return boolean 
+function reaper.ImGui_TreeNodeEx(ctx, str_id, label, flagsIn) end
+
+---Hit testing to allow subsequent widgets to overlap this one.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_AllowItemOverlap() end
+
+---Display a bullet instead of arrow.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_Bullet() end
+
+---TreeNodeFlags_Framed | TreeNodeFlags_NoTreePushOnOpen | TreeNodeFlags_NoAutoOpenOnLog
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_CollapsingHeader() end
+
+---Default node to be open.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_DefaultOpen() end
+
+---Use FramePadding (even for an unframed text node) to vertically align text
+---   baseline to regular widget height.
+---   Equivalent to calling AlignTextToFramePadding.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_FramePadding() end
+
+---Draw frame with background (e.g. for CollapsingHeader).
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_Framed() end
+
+---No collapsing, no arrow (use as a convenience for leaf nodes).
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_Leaf() end
+
+---Don't automatically and temporarily open node when Logging is active
+---   (by default logging will automatically open tree nodes).
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_NoAutoOpenOnLog() end
+
+---Don't do a TreePush when open (e.g. for CollapsingHeader)
+---   = no extra indent nor pushing on ID stack.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_NoTreePushOnOpen() end
+
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_None() end
+
+---Only open when clicking on the arrow part.
+---   If TreeNodeFlags_OpenOnDoubleClick is also set, single-click arrow or
+---   double-click all box to open.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_OpenOnArrow() end
+
+---Need double-click to open node.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_OpenOnDoubleClick() end
+
+---Draw as selected.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_Selected() end
+
+---Extend hit box to the right-most edge, even if not framed.
+---   This is not the default in order to allow adding other items on the same line.
+---   In the future we may refactor the hit system to be front-to-back,
+---   allowing natural overlaps and then this can become the default.
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_SpanAvailWidth() end
+
+---Extend hit box to the left-most and right-most edges (bypass the indented area).
+---@return integer retval
+function reaper.ImGui_TreeNodeFlags_SpanFullWidth() end
+
+---Unindent()+PopID()
+---@param ctx ImGui_Context
+function reaper.ImGui_TreePop(ctx) end
+
+---Indent()+PushID(). Already called by TreeNode when returning true,
+---but you can call TreePush/TreePop yourself if desired.
+---@param ctx ImGui_Context
+---@param str_id string
+function reaper.ImGui_TreePush(ctx, str_id) end
+
+---Move content position back to the left, by 'indent_w', or
+---StyleVar_IndentSpacing if 'indent_w' &lt;= 0
+---@param ctx ImGui_Context
+---@param indent_wIn? number
+function reaper.ImGui_Unindent(ctx, indent_wIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param size_w number
+---@param size_h number
+---@param v number
+---@param v_min number
+---@param v_max number
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, number v
+function reaper.ImGui_VSliderDouble(ctx, label, size_w, size_h, v, v_min, v_max, formatIn, flagsIn) end
+
+---@param ctx ImGui_Context
+---@param label string
+---@param size_w number
+---@param size_h number
+---@param v integer
+---@param v_min integer
+---@param v_max integer
+---@param formatIn? string
+---@param flagsIn? integer
+---@return boolean retval, integer v
+function reaper.ImGui_VSliderInt(ctx, label, size_w, size_h, v, v_min, v_max, formatIn, flagsIn) end
+
+---Return whether the pointer of the specified type is valid.Supported types are:- ImGui_Context*
+---- ImGui_DrawList*
+---- ImGui_DrawListSplitter*
+---- ImGui_Font*
+---- ImGui_Function*
+---- ImGui_Image*
+---- ImGui_ImageSet*
+---- ImGui_ListClipper*
+---- ImGui_TextFilter*
+---- ImGui_Viewport*
+---@param pointer identifier
+---@param type string
+---@return boolean 
+function reaper.ImGui_ValidatePtr(pointer, type) end
+
+---Center of the viewport.
+---@param viewport ImGui_Viewport
+---@return number x, number y
+function reaper.ImGui_Viewport_GetCenter(viewport) end
+
+---Main Area: Position of the viewport
+---@param viewport ImGui_Viewport
+---@return number x, number y
+function reaper.ImGui_Viewport_GetPos(viewport) end
+
+---Main Area: Size of the viewport.
+---@param viewport ImGui_Viewport
+---@return number w, number h
+function reaper.ImGui_Viewport_GetSize(viewport) end
+
+---Center of the viewport's work area.
+---@param viewport ImGui_Viewport
+---@return number x, number y
+function reaper.ImGui_Viewport_GetWorkCenter(viewport) end
+
+---&gt;= Viewport_GetPos
+---@param viewport ImGui_Viewport
+---@return number x, number y
+function reaper.ImGui_Viewport_GetWorkPos(viewport) end
+
+---&lt;= Viewport_GetSize
+---@param viewport ImGui_Viewport
+---@return number w, number h
+function reaper.ImGui_Viewport_GetWorkSize(viewport) end
+
+---Resize every window to its content every frame.
+---@return integer retval
+function reaper.ImGui_WindowFlags_AlwaysAutoResize() end
+
+---Always show horizontal scrollbar (even if ContentSize.x &lt; Size.x).
+---@return integer retval
+function reaper.ImGui_WindowFlags_AlwaysHorizontalScrollbar() end
+
+---Ensure child windows without border uses StyleVar_WindowPadding
+---   (ignored by default for non-bordered child windows, because more convenient).
+---@return integer retval
+function reaper.ImGui_WindowFlags_AlwaysUseWindowPadding() end
+
+---Always show vertical scrollbar (even if ContentSize.y &lt; Size.y).
+---@return integer retval
+function reaper.ImGui_WindowFlags_AlwaysVerticalScrollbar() end
+
+---Allow horizontal scrollbar to appear (off by default).
+---   You may use SetNextWindowContentSize(width, 0.0) prior to calling Begin() to
+---   specify width. Read code in the demo's "Horizontal Scrolling" section.
+---@return integer retval
+function reaper.ImGui_WindowFlags_HorizontalScrollbar() end
+
+---Has a menu-bar.
+---@return integer retval
+function reaper.ImGui_WindowFlags_MenuBar() end
+
+---Disable drawing background color (WindowBg, etc.) and outside border.
+---   Similar as using SetNextWindowBgAlpha(0.0).
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoBackground() end
+
+---Disable user collapsing window by double-clicking on it.
+---   Also referred to as Window Menu Button (e.g. within a docking node).
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoCollapse() end
+
+---WindowFlags_NoTitleBar | WindowFlags_NoResize | WindowFlags_NoScrollbar |
+---   WindowFlags_NoCollapse
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoDecoration() end
+
+---Disable docking of this window.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoDocking() end
+
+---Disable taking focus when transitioning from hidden to visible state.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoFocusOnAppearing() end
+
+---WindowFlags_NoMouseInputs | WindowFlags_NoNavInputs | WindowFlags_NoNavFocus
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoInputs() end
+
+---Disable catching mouse, hovering test with pass through.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoMouseInputs() end
+
+---Disable user moving the window.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoMove() end
+
+---WindowFlags_NoNavInputs | WindowFlags_NoNavFocus
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoNav() end
+
+---No focusing toward this window with gamepad/keyboard navigation
+---   (e.g. skipped by CTRL+TAB).
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoNavFocus() end
+
+---No gamepad/keyboard navigation within the window.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoNavInputs() end
+
+---Disable user resizing with the lower-right grip.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoResize() end
+
+---Never load/save settings in .ini file.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoSavedSettings() end
+
+---Disable user vertically scrolling with mouse wheel.
+---   On child window, mouse wheel will be forwarded to the parent unless
+---   NoScrollbar is also set.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoScrollWithMouse() end
+
+---Disable scrollbars (window can still scroll with mouse or programmatically).
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoScrollbar() end
+
+---Disable title-bar.
+---@return integer retval
+function reaper.ImGui_WindowFlags_NoTitleBar() end
+
+---Default flag.
+---@return integer retval
+function reaper.ImGui_WindowFlags_None() end
+
+---Show the window above all non-topmost windows.
+---@return integer retval
+function reaper.ImGui_WindowFlags_TopMost() end
+
+---Display a dot next to the title. When used in a tab/docking context,
+---   tab is selected when clicking the X + closure is not assumed
+---   (will wait for user to stop submitting the tab).
+---   Otherwise closure is assumed when pressing the X,
+---   so if you keep submitting the tab may reappear at end of tab bar.
+---@return integer retval
+function reaper.ImGui_WindowFlags_UnsavedDocument() end
 
 ---Get current button state.
 ---@param device integer
@@ -9243,7 +14217,7 @@ function reaper.MCULive_GetFaderValue(device, faderIdx, param) end
 ---Gets MIDI message from input buffer/queue. Gets (pops/pulls) indexed message (status, data1, data2 and frame_offset) from queue and retval is total size/length left in queue. E.g. continuously read all indiviual messages with deferred script. Frame offset resolution is 1/1024000 seconds, not audio samples. Long messages are returned as optional strings of byte characters. msgIdx -1 returns size (length) of buffer. Read also non-MCU devices by creating MCULive device with their input. 
 ---@param device integer
 ---@param msgIdx integer
----@return integer retval, integer status, integer data1, integer data2, integer frame_offset, optional string
+---@return integer retval, integer status, integer data1, integer data2, integer frame_offset, string|nil msg
 function reaper.MCULive_GetMIDIMessage(device, msgIdx) end
 
 ---Maps MCU Live device# button# to REAPER command ID. E.g. reaper.MCULive_Map(0,0x5b, 40340) maps MCU Rewind to "Track: Unsolo all tracks". Or remap button to another button if your MCU button layout doesnt play nicely with default MCULive mappings. By default range 0x00 .. 0x2d is in use. Button numbers are second column (prefixed with 0x) e.g. '90 5e' 0x5e for 'transport : play', roughly. mcu documentation: 
@@ -9334,9 +14308,9 @@ function reaper.MCULive_GetMIDIMessage(device, msgIdx) end
 ---
 ---@param device integer
 ---@param button integer
----@param command_id integer
+---@param bool? integer
 ---@return integer retval
-function reaper.MCULive_Map(device, button, command_id) end
+function reaper.MCULive_Map(device, button, bool) end
 
 ---Reset device. device &lt; 0 resets all and returns number of devices.
 ---@param device integer
@@ -9348,9 +14322,9 @@ function reaper.MCULive_Reset(device) end
 ---@param status integer
 ---@param data1 integer
 ---@param data2 integer
----@param string optional
+---@param msgIn? string
 ---@return integer retval
-function reaper.MCULive_SendMIDIMessage(device, status, data1, data2, string) end
+function reaper.MCULive_SendMIDIMessage(device, status, data1, data2, msgIn) end
 
 ---Set button as MIDI passthrough.
 ---@param device integer

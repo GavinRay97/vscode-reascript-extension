@@ -1,16 +1,3 @@
----@generic T
----@generic U
----@param tbl T[]
----@param fn fun(a: T): U
----@return U
-table.map = function(tbl, fn)
-	local result = {}
-	for i, v in ipairs(tbl) do
-		result[i] = fn(v)
-	end
-	return result
-end
-
 ---check that the signature is a SignaturesClass
 ---and has a lua or eel property
 ---@param signature unknown
@@ -28,17 +15,25 @@ end
 ---in them, so we're just adding an undersore at the end of them
 ---so they get parsed correctly by lua
 ---@param str string
+---@param isOptional? boolean
 ---@return string
-local function rewriteLuaReservedWords(str)
+local function rewriteLuaReservedWords(str, isOptional)
+	local retval = ""
 	if str == "end" then
-		return "end_"
+		retval = "end_"
 	elseif (str == "function") then
-		return "function_"
+		retval = "function_"
 	elseif (str == "in") then
-		return "in_"
+		retval = "in_"
+	elseif (str == "repeat") then
+		retval = "repeat_"
 	else
-		return str
+		retval = str
 	end
+	if isOptional ~= nil and isOptional == true then
+		retval = retval .. "?"
+	end
+	return retval
 end
 
 ---format ReturnValueElement's params
@@ -63,10 +58,12 @@ local function rewriteParams(parameters, decl_or_type)
 					(formatted_params:len() > 0 and ", " or "") .. rewriteLuaReservedWords(param.identifier or "")
 		elseif decl_or_type == "type" then
 			formatted_params = formatted_params ..
-					string.format("---@param %s %s\n", rewriteLuaReservedWords(param.identifier), param.type)
+					string.format("---@param %s %s\n", rewriteLuaReservedWords(param.identifier, param.isOptional), param.type)
 		else
+			local formatted_type = param.isOptional ~= nil and param.isOptional == true and param.type .. "|nil" or param.type
 			formatted_params = formatted_params .. (formatted_params:len() > 0 and ", " or "") ..
-					string.format("%s %s", param.type, rewriteLuaReservedWords(param.identifier or ""))
+					string.format("%s %s", formatted_type,
+						rewriteLuaReservedWords(param.identifier or ""))
 		end
 	end
 	return formatted_params
@@ -96,7 +93,7 @@ end
 ---@param def ReaScriptUSDocML
 ---@return string
 local function formatDefinition(def)
-	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) and isNotImGui(def.functioncall) then
+	if isSignaturesClass(def.signatures) and hasLuaProp(def.functioncall) --[[ and isNotImGui(def.functioncall)  ]] then
 		local parameters = def.signatures.lua.parameters
 		local return_values = def.signatures.lua.return_values
 
@@ -117,20 +114,6 @@ local function formatDefinition(def)
 end
 
 
----map each definition into à LuaDoc string
----@param definitions ReaScriptUSDocML[]
-local function formatDefinitions(definitions)
-	---@type string[]
-	local formattedDefinitions = {}
-	for _, definition in pairs(definitions) do
-		local formattedDefinition = formatDefinition(definition)
-		if formattedDefinition ~= "" then
-			formattedDefinitions[#formattedDefinitions + 1] = formattedDefinition
-		end
-	end
-	return formattedDefinitions
-end
-
 ---@param T string[]
 local function concatenateTable(T)
 	local ret_str = ""
@@ -140,10 +123,10 @@ local function concatenateTable(T)
 	return ret_str
 end
 
----	write a  typedefinitions file from the provided table
----file starts with "---@meta"
----then for each function mentioned in the table
---- follow the pattern:
+---write a  typedefinitions file from the provided table.
+---File starts with "---@meta".
+---Then, for each function mentioned in the table,
+---follow the pattern:
 --- ```lua
 --- ---@param param param_type
 --- ---@param param2 param2_type
@@ -153,7 +136,7 @@ end
 ---@param definitions ReaScriptUSDocML[]
 local function writeLuaTypes(definitions)
 	local metaTag = "---@meta\nreaper = {}\ngfx = {}\n\n"
-	local formattedDefinitions = formatDefinitions(definitions)
+	local formattedDefinitions = table.map(definitions, formatDefinition)
 	return metaTag .. concatenateTable(formattedDefinitions)
 end
 
