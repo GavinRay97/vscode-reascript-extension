@@ -274,8 +274,8 @@ function parser.parse()
     return reascript_core_api
 end
 
-function parser.writeJSON()
-    local reascript_core_api = parser.parse()
+---@param reascript_core_api ReaScriptUSDocML
+function parser.writeJSON(reascript_core_api)
     local outfile = io.open("results.json", "w")
     if outfile ~= nil then
         outfile:write(json.encode(reascript_core_api))
