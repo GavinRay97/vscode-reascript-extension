@@ -25,6 +25,8 @@ local function rewriteLuaReservedWords(str, isOptional)
 		retval = "function_"
 	elseif (str == "in") then
 		retval = "in_"
+	elseif (str == "repeat") then
+		retval = "repeat_"
 	else
 		retval = str
 	end

@@ -12675,8 +12675,8 @@ function reaper.ImGui_ProgressBar(ctx, fraction, size_arg_wIn, size_arg_hIn, ove
 ---manner (using ConfigVar_KeyRepeatDelay/ConfigVar_KeyRepeatRate settings).Note that you can call IsItemActive after any Button to tell if the button is
 ---held in the current frame.
 ---@param ctx ImGui_Context
----@param repeat boolean
-function reaper.ImGui_PushButtonRepeat(ctx, repeat) end
+---@param repeat_ boolean
+function reaper.ImGui_PushButtonRepeat(ctx, repeat_) end
 
 ---@param ctx ImGui_Context
 ---@param clip_rect_min_x number
