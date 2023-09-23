@@ -2,6 +2,8 @@
 reaper = {}
 gfx = {}
 
+---@alias ReaProject integer
+
 ---Creates a new media item. It will be empty and therefore not be shown in the arrange-view, until you associate a mediafile(audio, picture, video, etc) or a length and position to it using SetMediaItemInfo_Value
 ---@param tr MediaTrack
 ---@return MediaItem item
@@ -9499,28 +9501,28 @@ function reaper.Fab_Map(fxId, command, paramId, control, bandsIn, stepIn, accelI
 ---you can peek into the payload before the mouse button is released.
 ---@param ctx ImGui_Context
 ---@param type string
----@param payload string
----@param flagsIn? integer
+---@param payload? string DOCS say this is nil
+---@param flagsIn? number
 ---@return boolean retval, string payload
 function reaper.ImGui_AcceptDragDropPayload(ctx, type, payload, flagsIn) end
 
 ---Accept a list of dropped files. See AcceptDragDropPayload and GetDragDropPayloadFile.
 ---@param ctx ImGui_Context
----@param count integer
+---@param count? integer DOCS say this is nil
 ---@param flagsIn? integer
 ---@return boolean retval, integer count
 function reaper.ImGui_AcceptDragDropPayloadFiles(ctx, count, flagsIn) end
 
 ---Accept a RGB color. See AcceptDragDropPayload.
 ---@param ctx ImGui_Context
----@param rgb integer
+---@param rgb? integer DOCS say this is nil
 ---@param flagsIn? integer
 ---@return boolean retval, integer rgb
 function reaper.ImGui_AcceptDragDropPayloadRGB(ctx, rgb, flagsIn) end
 
 ---Accept a RGBA color. See AcceptDragDropPayload.
 ---@param ctx ImGui_Context
----@param rgba integer
+---@param rgba? integer DOCS say this is nil
 ---@param flagsIn? integer
 ---@return boolean retval, integer rgba
 function reaper.ImGui_AcceptDragDropPayloadRGBA(ctx, rgba, flagsIn) end
@@ -9544,9 +9546,24 @@ function reaper.ImGui_ArrowButton(ctx, str_id, dir) end
 ---before usage. Furthermore, fonts may only be attached or detached immediately
 ---after the context is created or before any other function calls modifying the
 ---context per defer cycle. See "limitations" in the font API documentation.
----@param obj? ImGui_Context
-function reaper.ImGui_Attach(obj) end
+---@param ctx? ImGui_Context
+---@param obj? ImGui_Font | ImGui_Image
+function reaper.ImGui_Attach(ctx, obj) end
 
+---@param ctx ImGui_Context
+---@param str_id string
+---@param img ImGui_Image
+---@param size_w number
+---@param size_h number
+---@param uv0_x? number
+---@param uv0_y? number
+---@param uv1_x? number
+---@param uv1_y? number
+---@param bg_col_rgba? integer
+---@param tint_col_rgba? integer
+function reaper.ImGui_AttachButton(ctx, str_id, img, size_w, size_h, uv0_x, uv0_y, uv1_x, uv1_y, bg_col_rgba, tint_col_rgba)end
+
+---TODO can’t find in docs
 ---Push window to the stack and start appending to it.- Passing true to 'p_open' shows a window-closing widget in the upper-right
 ---  corner of the window, which clicking will set the boolean to false when returned.
 ---- You may append multiple times to the same window during the same frame by
@@ -9667,16 +9684,16 @@ function reaper.ImGui_BeginPopup(ctx, str_id, flagsIn) end
 ---in an explicit ID here.
 ---@param ctx ImGui_Context
 ---@param str_idIn? string
----@param popup_flagsIn? integer
+---@param popup_flagsIn? number
 ---@return boolean 
 function reaper.ImGui_BeginPopupContextItem(ctx, str_idIn, popup_flagsIn) end
 
 ---Open+begin popup when clicked on current window.
 ---@param ctx ImGui_Context
----@param str_idIn? string
----@param popup_flagsIn? integer
+---@param str_id? string
+---@param popup_flags? integer
 ---@return boolean 
-function reaper.ImGui_BeginPopupContextWindow(ctx, str_idIn, popup_flagsIn) end
+function reaper.ImGui_BeginPopupContextWindow(ctx, str_id, popup_flags) end
 
 ---Block every interaction behind the window, cannot be closed by user, add a
 ---dimming background, has a title bar. Return true if the modal is open, and you
@@ -9684,35 +9701,35 @@ function reaper.ImGui_BeginPopupContextWindow(ctx, str_idIn, popup_flagsIn) end
 ---@param ctx ImGui_Context
 ---@param name string
 ---@param p_open? boolean
----@param flagsIn? integer
+---@param flags? integer
 ---@return boolean retval, boolean|nil p_open
-function reaper.ImGui_BeginPopupModal(ctx, name, p_open, flagsIn) end
+function reaper.ImGui_BeginPopupModal(ctx, name, p_open, flags) end
 
 ---Create and append into a TabBar.
 ---@param ctx ImGui_Context
 ---@param str_id string
----@param flagsIn? integer
+---@param flags? integer
 ---@return boolean 
-function reaper.ImGui_BeginTabBar(ctx, str_id, flagsIn) end
+function reaper.ImGui_BeginTabBar(ctx, str_id, flags) end
 
 ---Create a Tab. Returns true if the Tab is selected.
 ---Set 'p_open' to true to enable the close button.
 ---@param ctx ImGui_Context
 ---@param label string
 ---@param p_open? boolean
----@param flagsIn? integer
+---@param flags? integer
 ---@return boolean retval, boolean|nil p_open
-function reaper.ImGui_BeginTabItem(ctx, label, p_open, flagsIn) end
+function reaper.ImGui_BeginTabItem(ctx, label, p_open, flags) end
 
 ---@param ctx ImGui_Context
 ---@param str_id string
 ---@param column integer
----@param flagsIn? integer
----@param outer_size_wIn? number
----@param outer_size_hIn? number
----@param inner_widthIn? number
+---@param flags? integer
+---@param outer_size_w? number
+---@param outer_size_h? number
+---@param inner_width? number
 ---@return boolean 
-function reaper.ImGui_BeginTable(ctx, str_id, column, flagsIn, outer_size_wIn, outer_size_hIn, inner_widthIn) end
+function reaper.ImGui_BeginTable(ctx, str_id, column, flags, outer_size_w, outer_size_h, inner_width) end
 
 ---Begin/append a tooltip window.
 ---To create full-featured tooltip (with any kind of items).
@@ -9731,12 +9748,13 @@ function reaper.ImGui_Bullet(ctx) end
 ---@param text string
 function reaper.ImGui_BulletText(ctx, text) end
 
+---TODO can’t find in docs
 ---@param ctx ImGui_Context
 ---@param label string
----@param size_wIn? number
----@param size_hIn? number
+---@param size_w? number
+---@param size_h? number
 ---@return boolean 
-function reaper.ImGui_Button(ctx, label, size_wIn, size_hIn) end
+function reaper.ImGui_Button(ctx, label, size_w, size_h) end
 
 ---React on left mouse button (default).
 ---@return integer retval
@@ -9761,12 +9779,12 @@ function reaper.ImGui_CalcItemWidth(ctx) end
 
 ---@param ctx ImGui_Context
 ---@param text string
----@param w number
----@param h number
----@param hide_text_after_double_hashIn? boolean
----@param wrap_widthIn? number
+---@param w? number
+---@param h? number
+---@param hide_text_after_double_hash? boolean
+---@param wrap_width? number
 ---@return number w, number h
-function reaper.ImGui_CalcTextSize(ctx, text, w, h, hide_text_after_double_hashIn, wrap_widthIn) end
+function reaper.ImGui_CalcTextSize(ctx, text, w, h, hide_text_after_double_hash, wrap_width) end
 
 ---@param ctx ImGui_Context
 ---@param label string
@@ -9979,20 +9997,20 @@ function reaper.ImGui_Col_WindowBg() end
 ---@param ctx ImGui_Context
 ---@param label string
 ---@param p_visible boolean
----@param flagsIn? integer
+---@param flags? integer
 ---@return boolean retval, boolean p_visible
-function reaper.ImGui_CollapsingHeader(ctx, label, p_visible, flagsIn) end
+function reaper.ImGui_CollapsingHeader(ctx, label, p_visible, flags) end
 
 ---Display a color square/button, hover for details, return true when pressed.
 ---Color is in 0xRRGGBBAA or, if ColorEditFlags_NoAlpha is set, 0xRRGGBB.
 ---@param ctx ImGui_Context
 ---@param desc_id string
 ---@param col_rgba integer
----@param flagsIn? integer
----@param size_wIn? number
----@param size_hIn? number
+---@param flags? integer
+---@param size_w? number
+---@param size_h? number
 ---@return boolean 
-function reaper.ImGui_ColorButton(ctx, desc_id, col_rgba, flagsIn, size_wIn, size_hIn) end
+function reaper.ImGui_ColorButton(ctx, desc_id, col_rgba, flags, size_w, size_h) end
 
 ---Pack 0..1 RGBA values into a 32-bit integer (0xRRGGBBAA).
 ---@param r number
@@ -10006,8 +10024,9 @@ function reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, a) end
 ---@param h number
 ---@param s number
 ---@param v number
+---@param a? number alpha
 ---@return number r, number g, number b
-function reaper.ImGui_ColorConvertHSVtoRGB(h, s, v) end
+function reaper.ImGui_ColorConvertHSVtoRGB(h, s, v, a) end
 
 ---Convert a native color coming from REAPER or 0xRRGGBB to native.
 ---This swaps the red and blue channels on Windows.
@@ -10150,17 +10169,17 @@ function reaper.ImGui_ColorEditFlags_Uint8() end
 ---@param ctx ImGui_Context
 ---@param label string
 ---@param col_rgb integer
----@param flagsIn? integer
+---@param flags? integer
 ---@return boolean retval, integer col_rgb
-function reaper.ImGui_ColorPicker3(ctx, label, col_rgb, flagsIn) end
+function reaper.ImGui_ColorPicker3(ctx, label, col_rgb, flags) end
 
 ---@param ctx ImGui_Context
 ---@param label string
 ---@param col_rgba integer
----@param flagsIn? integer
----@param ref_colIn? integer
+---@param flags? integer
+---@param ref_col? integer
 ---@return boolean retval, integer col_rgba
-function reaper.ImGui_ColorPicker4(ctx, label, col_rgba, flagsIn, ref_colIn) end
+function reaper.ImGui_ColorPicker4(ctx, label, col_rgba, flags, ref_col) end
 
 ---Helper over BeginCombo/EndCombo for convenience purpose. Each item must be
 ---null-terminated (requires REAPER v6.44 or newer for EEL and Lua).
@@ -10168,9 +10187,9 @@ function reaper.ImGui_ColorPicker4(ctx, label, col_rgba, flagsIn, ref_colIn) end
 ---@param label string
 ---@param current_item integer
 ---@param items string
----@param popup_max_height_in_itemsIn? integer
+---@param popup_max_height_in_items? integer
 ---@return boolean retval, integer current_item
-function reaper.ImGui_Combo(ctx, label, current_item, items, popup_max_height_in_itemsIn) end
+function reaper.ImGui_Combo(ctx, label, current_item, items, popup_max_height_in_items) end
 
 ---Max ~20 items visible.
 ---@return integer retval
@@ -10375,9 +10394,9 @@ function reaper.ImGui_CreateDrawListSplitter(draw_list) end
 ---- The font styles in 'flags' are simulated by the font renderer
 ---@param family_or_file string
 ---@param size integer
----@param flagsIn? integer
+---@param flags? integer
 ---@return ImGui_Font 
-function reaper.ImGui_CreateFont(family_or_file, size, flagsIn) end
+function reaper.ImGui_CreateFont(family_or_file, size, flags) end
 
 ---Compile an EEL program.Standard EEL [math](https://www.reaper.fm/sdk/js/basiccode.php#js_basicfunc)
 ---and [string](https://www.reaper.fm/sdk/js/strings.php#js_string_funcs)
@@ -10390,9 +10409,9 @@ function reaper.ImGui_CreateFunctionFromEEL(code) end
 ---The returned object is valid as long as it is used in each defer cycle
 ---unless attached to a context (see Attach).('flags' currently unused and reserved for future expansion)
 ---@param file string
----@param flagsIn? integer
+---@param flags? integer
 ---@return ImGui_Image 
-function reaper.ImGui_CreateImage(file, flagsIn) end
+function reaper.ImGui_CreateImage(file, flags) end
 
 ---Requires REAPER v6.44 or newer for EEL and Lua. Load from a file using
 ---CreateImage or explicitely specify data_sz if supporting older versions.
@@ -10754,7 +10773,8 @@ function reaper.ImGui_DrawList_AddCircleFilled(draw_list, center_x, center_y, ra
 ---@param col_rgba integer
 function reaper.ImGui_DrawList_AddConvexPolyFilled(points, col_rgba) end
 
----@param img? ImGui_DrawList
+---@param draw_list? ImGui_DrawList
+---@param img? ImGui_Image
 ---@param p_min_x number
 ---@param p_min_y number
 ---@param p_max_x number
@@ -10764,9 +10784,10 @@ function reaper.ImGui_DrawList_AddConvexPolyFilled(points, col_rgba) end
 ---@param uv_max_xIn? number
 ---@param uv_max_yIn? number
 ---@param col_rgbaIn? integer
-function reaper.ImGui_DrawList_AddImage(img, p_min_x, p_min_y, p_max_x, p_max_y, uv_min_xIn, uv_min_yIn, uv_max_xIn, uv_max_yIn, col_rgbaIn) end
+function reaper.ImGui_DrawList_AddImage(draw_list, img, p_min_x, p_min_y, p_max_x, p_max_y, uv_min_xIn, uv_min_yIn, uv_max_xIn, uv_max_yIn, col_rgbaIn) end
 
----@param img? ImGui_DrawList
+---@param drawList? ImGui_DrawList
+---@param img? ImGui_Image
 ---@param p1_x number
 ---@param p1_y number
 ---@param p2_x number
@@ -10784,7 +10805,7 @@ function reaper.ImGui_DrawList_AddImage(img, p_min_x, p_min_y, p_max_x, p_max_y,
 ---@param uv4_xIn? number
 ---@param uv4_yIn? number
 ---@param col_rgbaIn? integer
-function reaper.ImGui_DrawList_AddImageQuad(img, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, uv1_xIn, uv1_yIn, uv2_xIn, uv2_yIn, uv3_xIn, uv3_yIn, uv4_xIn, uv4_yIn, col_rgbaIn) end
+function reaper.ImGui_DrawList_AddImageQuad(drawList, img, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y, uv1_xIn, uv1_yIn, uv2_xIn, uv2_yIn, uv3_xIn, uv3_yIn, uv4_xIn, uv4_yIn, col_rgbaIn) end
 
 ---@param img? ImGui_DrawList
 ---@param p_min_x number
@@ -10900,7 +10921,8 @@ function reaper.ImGui_DrawList_AddText(draw_list, x, y, col_rgba, text) end
 ---The last pushed font is used if font is nil.
 ---The size of the last pushed font is used if font_size is 0.
 ---cpu_fine_clip_rect_* only takes effect if all four are non-nil.
----@param font? ImGui_DrawList
+---@param draw_list? ImGui_DrawList
+---@param font? ImGui_Font
 ---@param font_size number
 ---@param pos_x number
 ---@param pos_y number
@@ -10911,7 +10933,7 @@ function reaper.ImGui_DrawList_AddText(draw_list, x, y, col_rgba, text) end
 ---@param cpu_fine_clip_rect_yIn? number
 ---@param cpu_fine_clip_rect_wIn? number
 ---@param cpu_fine_clip_rect_hIn? number
-function reaper.ImGui_DrawList_AddTextEx(font, font_size, pos_x, pos_y, col_rgba, text, wrap_widthIn, cpu_fine_clip_rect_xIn, cpu_fine_clip_rect_yIn, cpu_fine_clip_rect_wIn, cpu_fine_clip_rect_hIn) end
+function reaper.ImGui_DrawList_AddTextEx(draw_list, font, font_size, pos_x, pos_y, col_rgba, text, wrap_widthIn, cpu_fine_clip_rect_xIn, cpu_fine_clip_rect_yIn, cpu_fine_clip_rect_wIn, cpu_fine_clip_rect_hIn) end
 
 ---@param draw_list ImGui_DrawList
 ---@param p1_x number
@@ -12688,8 +12710,9 @@ function reaper.ImGui_PushClipRect(ctx, clip_rect_min_x, clip_rect_min_y, clip_r
 
 ---Change the current font. Use nil to push the default font.
 ---The font object must have been registered using Attach. See PopFont.
----@param font? ImGui_Context
-function reaper.ImGui_PushFont(font) end
+---@param ctx? ImGui_Context
+---@param font? ImGui_Font
+function reaper.ImGui_PushFont(ctx, font) end
 
 ---Push string into the ID stack.
 ---@param ctx ImGui_Context
