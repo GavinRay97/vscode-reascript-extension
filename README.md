@@ -4,6 +4,9 @@ An extension for Reaper's ReaScript API methods in VS Code.
 Provides type-checking in lua, intellisense/Autocomplete, and doc-comments on hover for all functions.
 
 ## Changelog
+- 0.0.11 (Sep 23rd 2023)
+  - remove common typos in function declarations (params finishing with "In")
+  - fix some ReaImGui tyes
 - 0.0.10 (July 6th 2023)
   - fix optional parameters of functions
   - rewrite lua keywords that were used as param names 
