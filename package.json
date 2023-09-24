@@ -1,7 +1,7 @@
 {
   "name": "reascript-docs",
   "displayName": "REAPER ReaScript",
-  "version": "0.0.10",
+  "version": "0.1.1",
   "publisher": "antoinebalaine",
   "icon": "reaperlogo.png",
   "repository": {
@@ -24,7 +24,8 @@
     "onLanguage:lua",
     "onLanguage:EEL",
     "onLanguage:Jesusonic",
-    "onLanguage:plaintext"
+    "workspaceContains:**/*.jsfx",
+    "workspaceContains:**/*.jsfx-in"
   ],
   "contributes": {
     "languages": [
@@ -42,7 +43,10 @@
       },
       {
         "id": "Jesusonic",
-        "extension": ".jsfx"
+        "extensions": [
+          ".jsfx",
+          ".jsfx-inc"
+        ]
       },
       {
         "id": "WALTER",
@@ -76,7 +80,8 @@
     "scrape-api": "npx ts-node ./src/api-scraper/OLD_scrape-reascript-api.ts",
     "vscode:prepublish": "yarn compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
